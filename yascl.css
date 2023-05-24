@@ -1,0 +1,11 @@
+.yascl {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	overflow: hidden;
+}
+
+.yascl > * {
+	width: auto;
+	position: relative;
+}

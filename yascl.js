@@ -8,6 +8,8 @@ function yascl_initialise(options) {
 	let parent = jQuery(options.selector);
 	if (parent.length === 0) return;
 
+	parent.addClass('yascl');
+
 	if (options.autoplay) {
 		parent.addClass("autoplay");
 		yascl_animate(parent, "left", options);
