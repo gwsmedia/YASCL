@@ -10,10 +10,10 @@ YASCL is perfect for that. It's about as plug-and-play as you can get.
 Include in `<head></head>`:
 ```
 <!-- JQuery -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
 
 <!-- YASCL JS -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/gwsmedia/yascl/yascl.js">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/gwsmedia/yascl/yascl.js"></script>
 
 <!-- YASCL stylesheet -->
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/gwsmedia/yascl/yascl.css">
