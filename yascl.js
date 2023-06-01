@@ -6,13 +6,17 @@
 
 function yascl_initialise(options) {
 	let parent = jQuery(options.selector);
-	if (parent.length === 0) return;
-
+	if (parent.length === 0 || parent.hasClass('yascl')) return;
 	parent.addClass('yascl');
 
+	let wrapper;
+	if(options.innerSelector) wrapper = parent.children(options.innerSelector);
+	if(wrapper == null || wrapper.length === 0) wrapper = parent;
+	wrapper.addClass('yascl-wrapper');
+
 	if (options.autoplay) {
-		parent.addClass("autoplay");
-		yascl_animate(parent, "left", options);
+		wrapper.addClass("autoplay");
+		yascl_animate(wrapper, "left", options);
 	}
 
 	if (options.arrowSelector) {
@@ -21,27 +25,27 @@ function yascl_initialise(options) {
 }
 
 
-function yascl_animate(parent, direction, options) {
-	if (parent.hasClass("animating")) return;
-	parent.addClass("animating");
-	
-	let items = parent.children();
+function yascl_animate(wrapper, direction, options) {
+	if (wrapper.hasClass("animating")) return;
+	wrapper.addClass("animating");
+
+	let items = wrapper.children();
 	let easing = options.easing ? options.easing : "linear";
 	let loop = options.loop == null ? true : options.loop;
-	let right = yascl_move_item(parent, items, direction, loop, "pre-animation");
+	let right = yascl_move_item(wrapper, items, direction, loop, "pre-animation");
 
 	items.animate({ right: right }, options.time, easing, function () {
-		if (parent.find(":animated").length > 0) return;
+		if (wrapper.find(":animated").length > 0) return;
 
-		yascl_move_item(parent, items, direction, loop, "post-animation");
+		yascl_move_item(wrapper, items, direction, loop, "post-animation");
 
-		parent.removeClass("animating");
-		if (parent.hasClass("autoplay")) yascl_animate(parent, direction, options);
+		wrapper.removeClass("animating");
+		if (wrapper.hasClass("autoplay")) yascl_animate(wrapper, direction, options);
 	});
 }
 
 
-function yascl_move_item(parent, items, direction, loop, state) {
+function yascl_move_item(wrapper, items, direction, loop, state) {
 	let eq = direction == "left" ? 0 : -1;
 	let item = items.eq(eq);
 	let right = parseInt(item.css('right').replace('px', ''));
@@ -49,16 +53,16 @@ function yascl_move_item(parent, items, direction, loop, state) {
 
 	if(direction == "left") {
 		if(loop && state == "post-animation") {
-			item.appendTo(parent);
+			item.appendTo(wrapper);
 			items.css("right", "0px");
-      return width;
+			return width;
 		}
 		return right + width;
 	} else {
 		if(loop && state == "pre-animation") {
-			item.prependTo(parent);
+			item.prependTo(wrapper);
 			items.css("right", width);
-      return "0px";
+			return "0px";
 		}
 		return right - width;
 	}
@@ -69,10 +73,10 @@ function yascl_set_arrow_events(options) {
 	let arrows = jQuery(options.arrowSelector);
 
 	arrows.click(function () {
-		let direction = jQuery(this).hasClass("left") ? "left" : "right";
-		let parent = jQuery(options.selector);
-		parent.removeClass("autoplay");
-		yascl_animate(parent, direction, options);
+		let direction = jQuery(this).hasClass("right") ? "right" : "left";
+		let wrapper = jQuery(options.selector).children('.yascl-wrapper');
+		wrapper.removeClass("autoplay");
+		yascl_animate(wrapper, direction, options);
 	});
 }
 

@@ -1,11 +1,20 @@
 .yascl {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: nowrap;
-	overflow: hidden;
+  overflow: hidden;
 }
 
-.yascl > * {
-	width: auto;
-	position: relative;
+.yascl-wrapper {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow: visible;
+}
+
+/* If parent and wrapper are the same, override default wrapper overflow */
+.yascl.yascl-wrapper {
+  overflow: hidden;
+}
+
+.yascl-wrapper > * {
+  width: auto;
+  position: relative;
 }
