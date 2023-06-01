@@ -1,0 +1,26 @@
+{
+  "name": "yascl",
+  "version": "1.0.0",
+  "description": "Minimalist endless carousel for extensive styling",
+  "main": "yascl.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gwsmedia/yascl.git"
+  },
+  "keywords": [
+    "carousel",
+    "library",
+    "slider",
+    "minimalist",
+    "plugin"
+  ],
+  "author": "GWS Media Ltd.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gwsmedia/yascl/issues"
+  },
+  "homepage": "https://github.com/gwsmedia/yascl#readme"
+}
