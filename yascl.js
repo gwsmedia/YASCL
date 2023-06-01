@@ -27,12 +27,13 @@ function yascl_animate(parent, direction, options) {
 	
 	let items = parent.children();
 	let easing = options.easing ? options.easing : "linear";
-	let right = yascl_move_item(parent, items, direction, "pre-animation");
-	
+	let loop = options.loop == null ? true : options.loop;
+	let right = yascl_move_item(parent, items, direction, loop, "pre-animation");
+
 	items.animate({ right: right }, options.time, easing, function () {
 		if (parent.find(":animated").length > 0) return;
 
-		yascl_move_item(parent, items, direction, "post-animation");
+		yascl_move_item(parent, items, direction, loop, "post-animation");
 
 		parent.removeClass("animating");
 		if (parent.hasClass("autoplay")) yascl_animate(parent, direction, options);
@@ -40,24 +41,26 @@ function yascl_animate(parent, direction, options) {
 }
 
 
-function yascl_move_item(parent, items, direction, state) {
-	let right;
+function yascl_move_item(parent, items, direction, loop, state) {
 	let eq = direction == "left" ? 0 : -1;
 	let item = items.eq(eq);
+	let right = parseInt(item.css('right').replace('px', ''));
 	let width = item.outerWidth(true);
-	
+
 	if(direction == "left") {
-		if(state == "post-animation") {
+		if(loop && state == "post-animation") {
 			item.appendTo(parent);
 			items.css("right", "0px");
+      return width;
 		}
-		return width;
+		return right + width;
 	} else {
-		if(state == "pre-animation") {
+		if(loop && state == "pre-animation") {
 			item.prependTo(parent);
 			items.css("right", width);
+      return "0px";
 		}
-		return "0px";
+		return right - width;
 	}
 }
 
