@@ -9,10 +9,11 @@ function yascl_initialise(options) {
 	if (parent.length === 0 || parent.hasClass('yascl')) return;
 	parent.addClass('yascl');
 
-	let wrapper;
-	if(options.innerSelector) wrapper = parent.children(options.innerSelector);
-	if(wrapper == null || wrapper.length === 0) wrapper = parent;
-	wrapper.addClass('yascl-wrapper');
+	let inner;
+	if(options.innerSelector) inner = parent.find(options.innerSelector);
+	if(inner == null || inner.length === 0) inner = parent;
+	inner.children().wrapAll('<div class="yascl-wrapper"></div>');
+	let wrapper = inner.children('.yascl-wrapper');
 
 	if (options.autoplay) {
 		wrapper.addClass("autoplay");
@@ -74,7 +75,7 @@ function yascl_set_arrow_events(options) {
 
 	arrows.click(function () {
 		let direction = jQuery(this).hasClass("right") ? "left" : "right";
-		let wrapper = jQuery(options.selector).children('.yascl-wrapper');
+		let wrapper = jQuery(options.selector).parent().find('.yascl-wrapper');
 		wrapper.removeClass("autoplay");
 		yascl_animate(wrapper, direction, options);
 	});
