@@ -6,6 +6,9 @@
 // TODO: Rewrite as OOP
 // TODO: Remove jQuery dependency?
 // TODO: Left and right discrepancy: arrow side or movement direction?
+// TODO: Rename inner and wrapper variables?
+// TODO: Stop slider when reaching virtual boundary instead of waiting until full movement finished
+// TODO: Ability to drag slider
 
 function yascl_initialise(options) {
 	let parent = jQuery(options.selector);
