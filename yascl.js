@@ -3,6 +3,9 @@
 // YASCL -- Yet Another Simple Carousel Library
 // Developed by Jerome Beckett, 2022
 
+// TODO: Rewrite as OOP
+// TODO: Remove jQuery dependency?
+// TODO: Left and right discrepancy: arrow side or movement direction?
 
 function yascl_initialise(options) {
 	let parent = jQuery(options.selector);
@@ -15,18 +18,22 @@ function yascl_initialise(options) {
 	inner.children().wrapAll('<div class="yascl-wrapper"></div>');
 	let wrapper = inner.children('.yascl-wrapper');
 
-	if (options.autoplay) {
-		wrapper.addClass("autoplay");
-		yascl_animate(wrapper, "left", options);
+	if(!options.loop) {
+		yascl_reached_virtual_boundary(inner, wrapper.children(), "right", options)
 	}
 
 	if (options.arrowSelector) {
 		yascl_set_arrow_events(options);
 	}
+
+	if (options.autoplay) {
+		wrapper.addClass("autoplay");
+		yascl_animate(inner, wrapper, "left", options);
+	}
 }
 
 
-function yascl_animate(wrapper, direction, options) {
+function yascl_animate(inner, wrapper, direction, options) {
 	if (wrapper.hasClass("animating")) return;
 	wrapper.addClass("animating");
 
@@ -40,8 +47,10 @@ function yascl_animate(wrapper, direction, options) {
 
 		yascl_move_item(wrapper, items, direction, loop, "post-animation");
 
+		let reachedBoundary = loop ? false : yascl_reached_virtual_boundary(inner, items, direction, options);
+
 		wrapper.removeClass("animating");
-		if (wrapper.hasClass("autoplay")) yascl_animate(wrapper, direction, options);
+		if (!reachedBoundary && wrapper.hasClass("autoplay")) yascl_animate(inner, wrapper, direction, options);
 	});
 }
 
@@ -75,9 +84,62 @@ function yascl_set_arrow_events(options) {
 
 	arrows.click(function () {
 		let direction = jQuery(this).hasClass("right") ? "left" : "right";
+		let inner = options.innerSelector == null ? jQuery('.yascl') : jQuery(options.innerSelector);
 		let wrapper = jQuery(options.selector).parent().find('.yascl-wrapper');
 		wrapper.removeClass("autoplay");
-		yascl_animate(wrapper, direction, options);
+		yascl_animate(inner, wrapper, direction, options);
 	});
 }
 
+
+function yascl_get_boundary_overstep(inner, items, direction) {
+	let slide = direction == "left" ? items.last() : items.first();
+
+	let slideLeft = slide.offset().left;
+	let slideWidth = slide.outerWidth();
+	let slideRight = slideLeft + slideWidth;
+
+	let innerLeft = inner.offset().left;
+	let innerRight = innerLeft + inner.outerWidth();
+
+	let outOfBounds = direction == "left" ? slideRight - innerRight : innerLeft - slideLeft;
+	return outOfBounds / slideWidth;
+}
+
+
+function yascl_reached_virtual_boundary(inner, items, direction, options) {
+	let overstep = yascl_get_boundary_overstep(inner, items, direction);
+	let threshold = options.overstepThreshold == null ? 0.10 : options.overstepThreshold;
+	let reached = overstep <= threshold;
+
+	let boundaryArrow;
+	let oppositeArrow;
+	if(direction == "left") {
+		boundaryArrow = "right";
+		oppositeArrow = "left";
+	} else {
+		boundaryArrow = "left";
+		oppositeArrow = "right";
+	}
+
+	yascl_toggle_arrow(boundaryArrow, options, !reached);
+	yascl_toggle_arrow(oppositeArrow, options, true);
+
+	return reached;
+}
+
+
+function yascl_toggle_arrow(arrow, options, state = true) {
+	if(options.arrowSelector == null) return;
+
+	let arrowEl;
+	let arrowEls = jQuery(options.arrowSelector);
+
+	if(arrow == "right") {
+		arrowEl = arrowEls.filter(".right");
+	} else {
+		arrowEl = arrowEls.not(".right");
+	}
+
+	arrowEl.toggle(state);
+}
