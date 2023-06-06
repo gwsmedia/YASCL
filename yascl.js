@@ -73,7 +73,7 @@ function yascl_set_arrow_events(options) {
 	let arrows = jQuery(options.arrowSelector);
 
 	arrows.click(function () {
-		let direction = jQuery(this).hasClass("right") ? "right" : "left";
+		let direction = jQuery(this).hasClass("right") ? "left" : "right";
 		let wrapper = jQuery(options.selector).children('.yascl-wrapper');
 		wrapper.removeClass("autoplay");
 		yascl_animate(wrapper, direction, options);
