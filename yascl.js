@@ -21,15 +21,13 @@ function yascl_initialise(options) {
 	inner.children().wrapAll('<div class="yascl-wrapper"></div>');
 	let wrapper = inner.children('.yascl-wrapper');
 
-	if(!options.loop) {
-		yascl_reached_virtual_boundary(inner, wrapper.children(), "right", options)
-	}
+	let boundaryCrossed = yascl_check_virtual_boundaries(inner, wrapper.children(), options, true)
 
 	if (options.arrowSelector) {
 		yascl_set_arrow_events(options);
 	}
 
-	if (options.autoplay) {
+	if (boundaryCrossed && options.autoplay) {
 		wrapper.addClass("autoplay");
 		yascl_animate(inner, wrapper, "left", options);
 	}
@@ -50,7 +48,7 @@ function yascl_animate(inner, wrapper, direction, options) {
 
 		yascl_move_item(wrapper, items, direction, loop, "post-animation");
 
-		let reachedBoundary = loop ? false : yascl_reached_virtual_boundary(inner, items, direction, options);
+		let reachedBoundary = loop ? false : yascl_check_virtual_boundaries(inner, items, options);
 
 		wrapper.removeClass("animating");
 		if (!reachedBoundary && wrapper.hasClass("autoplay")) yascl_animate(inner, wrapper, direction, options);
@@ -110,25 +108,21 @@ function yascl_get_boundary_overstep(inner, items, direction) {
 }
 
 
-function yascl_reached_virtual_boundary(inner, items, direction, options) {
+function yascl_check_virtual_boundary(inner, items, direction, options) {
 	let overstep = yascl_get_boundary_overstep(inner, items, direction);
 	let threshold = options.overstepThreshold == null ? 0.10 : options.overstepThreshold;
 	let reached = overstep <= threshold;
 
-	let boundaryArrow;
-	let oppositeArrow;
-	if(direction == "left") {
-		boundaryArrow = "right";
-		oppositeArrow = "left";
-	} else {
-		boundaryArrow = "left";
-		oppositeArrow = "right";
-	}
-
-	yascl_toggle_arrow(boundaryArrow, options, !reached);
-	yascl_toggle_arrow(oppositeArrow, options, true);
+	yascl_toggle_arrow(direction == "left" ? "right" : "left", options, !reached);
 
 	return reached;
+}
+
+
+function yascl_check_virtual_boundaries(inner, items, options, invertCheck = false) {
+	let reachedLeft = yascl_check_virtual_boundary(inner, items, "left", options);
+	let reachedRight = yascl_check_virtual_boundary(inner, items, "right", options);
+	return invertCheck ? !reachedLeft || !reachedLeft : reachedLeft || reachedRight;
 }
 
 
