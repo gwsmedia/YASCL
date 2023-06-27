@@ -3,25 +3,27 @@ class YASCL {
 	constructor(options) {
 		this.options = options;
 
-		this.parent = jQuery(this.options.selector);
-		if (this.parent.length === 0 || this.parent.hasClass('yascl')) return;
-		this.parent.addClass('yascl');
+		jQuery(() => {
+			this.parent = jQuery(this.options.selector);
+			if (this.parent.length === 0 || this.parent.hasClass('yascl')) return;
+			this.parent.addClass('yascl');
 
-		if(this.options.innerSelector) this.inner = this.parent.find(this.options.innerSelector);
-		if(this.inner == null || this.inner.length === 0) this.inner = this.parent;
-		this.inner.children().wrapAll('<div class="yascl-wrapper"></div>');
-		this.wrapper = this.inner.children('.yascl-wrapper');
+			if(this.options.innerSelector) this.inner = this.parent.find(this.options.innerSelector);
+			if(this.inner == null || this.inner.length === 0) this.inner = this.parent;
+			this.inner.children().wrapAll('<div class="yascl-wrapper"></div>');
+			this.wrapper = this.inner.children('.yascl-wrapper');
 
-		const boundaryCrossed = this.checkVirtualBoundaries(true);
+			const boundaryCrossed = this.checkVirtualBoundaries(true);
 
-		if (this.options.arrowSelector) {
-			this.setArrowEvents();
-		}
+			if (this.options.arrowSelector) {
+				this.setArrowEvents();
+			}
 
-		if (boundaryCrossed && this.options.autoplay) {
-			this.wrapper.addClass("autoplay");
-			this.animate("left");
-		}
+			if (boundaryCrossed && this.options.autoplay) {
+				this.wrapper.addClass("autoplay");
+				this.animate("left");
+			}
+		});
 	}
 
 
