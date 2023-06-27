@@ -20,7 +20,7 @@ import YASCL from 'yascl';
 or include the pre-bundled script:
 
 ```
-<script type="text/javascript" src="node_modules/yascl/node_modules/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
 <script type="text/javascript" src="node_modules/yascl/dist/yascl.js"></script>
 ```
 
