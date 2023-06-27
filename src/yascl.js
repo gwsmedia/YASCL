@@ -1,5 +1,8 @@
+import './yascl.css';
+import jQuery from 'jquery';
 
-class YASCL {
+
+export default class YASCL {
 	constructor(options) {
 		this.options = options;
 
