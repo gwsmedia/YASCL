@@ -6,27 +6,65 @@ export default class YASCL {
 	constructor(options) {
 		this.options = options;
 
-		jQuery(() => {
-			this.parent = jQuery(this.options.selector);
-			if (this.parent.length === 0 || this.parent.hasClass('yascl')) return;
-			this.parent.addClass('yascl');
+		if(this.options.skipDomReady != null && this.options.skipDomReady) {
+			this.initialise();
+		} else {
+			jQuery(() => {
+				this.initialise();
+			});
+		}
+	}
 
-			if(this.options.innerSelector) this.inner = this.parent.find(this.options.innerSelector);
-			if(this.inner == null || this.inner.length === 0) this.inner = this.parent;
-			this.inner.children().wrapAll('<div class="yascl-wrapper"></div>');
-			this.wrapper = this.inner.children('.yascl-wrapper');
 
-			const boundaryCrossed = this.checkVirtualBoundaries(true);
+	initialise() {
+		this.parent = jQuery(this.options.selector);
 
-			if (this.options.arrowSelector) {
-				this.setArrowEvents();
-			}
+		if(this.parent.length === 0 || this.parent.hasClass('yascl')) {
+			return;
+		} else if(this.parent.length > 1) {
+			this.initialiseMultiple();
+		} else {
+			this.initialiseSingle();
+		}
+	}
 
-			if (boundaryCrossed && this.options.autoplay) {
-				this.wrapper.addClass("autoplay");
-				this.animate("left");
-			}
+
+	initialiseMultiple() {
+		let options = this.options;
+		options.selector += '.processing';
+		options.skipDomReady = true;
+
+		this.parent.each(function() {
+			jQuery(this).addClass('processing');
+			new YASCL(options);
+			jQuery(this).removeClass('processing');
 		});
+	}
+
+
+	initialiseSingle() {
+		this.wrapChildren();
+
+		if (this.options.arrowSelector) {
+			this.setArrowEvents();
+		}
+
+		const boundaryCrossed = this.checkVirtualBoundaries(true);
+
+		if (boundaryCrossed && this.options.autoplay) {
+			this.wrapper.addClass("autoplay");
+			this.animate("left");
+		}
+	}
+
+
+	wrapChildren() {
+		this.parent.addClass('yascl');
+
+		if(this.options.innerSelector) this.inner = this.parent.find(this.options.innerSelector);
+		if(this.inner == null || this.inner.length === 0) this.inner = this.parent;
+		this.inner.children().wrapAll('<div class="yascl-wrapper"></div>');
+		this.wrapper = this.inner.children('.yascl-wrapper');
 	}
 
 
@@ -80,9 +118,13 @@ export default class YASCL {
 
 
 	setArrowEvents() {
-		const arrows = jQuery(this.options.arrowSelector);
+		if(this.options.localArrows != null && this.options.localArrows) {
+			this.arrows = this.parent.find(this.options.arrowSelector);
+		} else {
+			this.arrows = jQuery(this.options.arrowSelector);
+		}
 
-		arrows.click((e) => {
+		this.arrows.click((e) => {
 			const direction = jQuery(e.currentTarget).hasClass("right") ? "left" : "right";
 			this.wrapper.removeClass("autoplay");
 			this.animate(direction);
@@ -125,15 +167,14 @@ export default class YASCL {
 
 
 	toggleArrow(arrow, state = true) {
-		if (this.options.arrowSelector == null) return;
+		if (this.arrows == null) return;
 
 		let arrowEl;
-		let arrowEls = jQuery(this.options.arrowSelector);
 
 		if (arrow == "right") {
-			arrowEl = arrowEls.filter(".right");
+			arrowEl = this.arrows.filter(".right");
 		} else {
-			arrowEl = arrowEls.not(".right");
+			arrowEl = this.arrows.not(".right");
 		}
 
 		arrowEl.toggle(state);
