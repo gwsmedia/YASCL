@@ -34,7 +34,7 @@ or include the pre-bundled script:
 ### Simplest usage
 ```
 new YASCL({
-	selector: '#css-selector-here'
+	selector: '#id-of-element'
 });
 ```
 
@@ -46,6 +46,8 @@ Unless **innerSelector** is also defined, this means:
 - All of its direct children will become slider items.
 - For looping to work smoothly the width of this container should at max be the width of one item less than the total width of all items.
 In other words if you have 5 items of width 100px, this container should have a max width of 400px.
+
+Multiple sliders can use the same selector and they will still be considered separate sliders.
 
 **time**  
 default: `400`  
@@ -73,10 +75,15 @@ outside of which all slider content is hidden. Then you can use the **innerSelec
 calculate where the slider should "begin" and "end". This means you can hide the arrows at a certain limit but still show the content overflowing out of 
 **innerSelector**. If present, the bullet points defined for **selector** will apply to this container instead.
 
+**localArrows**  
+default: `false`  
+If true, the `arrowSelector` will only be searched for as a descendent of `selector`. In such a case you will need to have an `innerSelector` defined so the
+arrows are not considered slider items. This can be useful if the arrows do not have unique `arrowSelector`s.
+
 ### Example
 ```
 new YASCL({
-	selector: '#css-selector-here',
+	selector: '#page-wrapper .slider',
 	time: 600,
 	easing: 'swing',
 	autoplay: true,
