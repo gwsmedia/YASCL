@@ -77,8 +77,8 @@ calculate where the slider should "begin" and "end". This means you can hide the
 
 **localArrows**  
 default: `false`  
-If true, the `arrowSelector` will only be searched for as a descendent of `selector`. In such a case you will need to have an `innerSelector` defined so the
-arrows are not considered slider items. This can be useful if the arrows do not have unique `arrowSelector`s.
+If true, the **arrowSelector** will only be searched for as a descendent of **selector**. In such a case you will need to have an **innerSelector** defined so the
+arrows are not considered slider items. This can be useful if the arrows do not have unique **arrowSelector**s.
 
 ### Example
 ```
