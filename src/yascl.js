@@ -46,13 +46,14 @@ export default class YASCL {
 
 	initialiseSingle() {
 		this.wrapChildren();
+		// TODO: use transform instead of right
 		this.wrapper.css('right', '0px');
 
 		if (this.options.arrowSelector) {
 			this.setArrowEvents();
 		}
 
-		const boundaryCrossed = this.options.loop || this.checkVirtualBoundaries(true);
+		const boundaryCrossed = this.options.loop || this.checkBoundaries();
 
 		if (boundaryCrossed && this.options.autoplay) {
 			this.wrapper.addClass("autoplay");
@@ -96,17 +97,16 @@ export default class YASCL {
 
 		this.wrapper.animate({ right: right }, this.options.time, easing, () => {
 			if(this.wrapper.find(":animated").length > 0) return;
-
-			if(loop) this.moveLoopedItem(direction, "post-animation");
-
-			const reachedBoundary = loop ? false : this.checkVirtualBoundaries();
-
 			this.wrapper.removeClass("animating");
 
-			// TODO: add autoplay delay option
-			if (!reachedBoundary && this.wrapper.hasClass("autoplay")) {
-				this.animate(direction);
-			}
+			if(loop) this.moveLoopedItem(direction, "post-animation");
+			const boundaryCrossed = loop || this.checkBoundaries();
+
+		// TODO: add autoplay delay option
+		if (boundaryCrossed && this.wrapper.hasClass("autoplay")) {
+			this.animate(direction);
+		}
+
 		});
 	}
 
@@ -120,7 +120,7 @@ export default class YASCL {
 		const slideToEdge = this.options.slideToEdge || false;
 		const innerLeft = this.inner.offset().left;
 
-		let start, end, operand;
+		let start, end, operand, distance = 0;
 		let items = this.wrapper.children();
 
 		if (direction === 'left') start = 0, end = items.length, operand = 1;
@@ -133,7 +133,8 @@ export default class YASCL {
 			if(direction == 'left') {
 				if(itemLeft > innerLeft) {
 
-					return itemLeft - innerLeft;
+					distance = itemLeft - innerLeft;
+					break;
 
 				} else {
 
@@ -146,15 +147,22 @@ export default class YASCL {
 
 				if(slideToEdge && itemRight < innerRight) {
 
-					return itemRight - innerRight;
+					distance = itemRight - innerRight;
+					break;
 
 				} else if(!slideToEdge && itemLeft < innerLeft) {
 
-					return itemLeft - innerLeft;
+					distance = itemLeft - innerLeft;
+					break;
 
 				}
 			}
 		}
+
+		const overstep = this.getBoundaryOverstep(direction);
+		if(Math.abs(distance) > Math.abs(overstep)) distance = overstep;
+
+		return distance;
 	}
 
 
@@ -205,38 +213,46 @@ export default class YASCL {
 	}
 
 
-	getBoundaryOverstep(direction) {
+	getBoundaryOverstep(direction, asBool = false) {
 		const items = this.wrapper.children();
 		const slide = direction == "left" ? items.last() : items.first();
 
-		const slideLeft = slide.offset().left;
-		const slideWidth = slide.outerWidth();
-		const slideRight = slideLeft + slideWidth;
-
 		const innerLeft = this.inner.offset().left;
-		const innerRight = innerLeft + this.inner.outerWidth();
+		const slideLeft = slide.offset().left;
 
-		const outOfBounds = direction === "left" ? slideRight - innerRight : innerLeft - slideLeft;
-		return outOfBounds / slideWidth;
+		if(direction == "left") {
+
+			const innerRight = innerLeft + this.inner.outerWidth();
+			const slideWidth = slide.outerWidth();
+			const slideRight = slideLeft + slideWidth;
+
+			return asBool ? slideRight > innerRight : slideRight - innerRight;
+
+		} else if(direction == "right") {
+
+			return asBool ? slideLeft < innerLeft : slideLeft - innerLeft;
+
+		}
 	}
 
 
-	checkVirtualBoundary(direction) {
-		const overstep = this.getBoundaryOverstep(direction);
-		const threshold = this.options.overstepThreshold || 0.10;
-		const reached = overstep <= threshold;
+	// TODO: Sort out arrow/direction/boundary left/right confusion
+	// TODO: Rename functions
+	checkBoundary(boundary) {
+		const direction = boundary === "left" ? "right" : "left";
+		const isOverstep = this.getBoundaryOverstep(direction, true);
 
-		this.toggleArrow(direction === "left" ? "right" : "left", !reached);
+		this.toggleArrow(boundary, isOverstep);
 
-		return reached;
+		return isOverstep;
 	}
 
 
 	// Check boundaries on both sides
-	checkVirtualBoundaries(invertCheck = false) {
-		const reachedLeft = this.checkVirtualBoundary("left");
-		const reachedRight = this.checkVirtualBoundary("right");
-		return invertCheck ? !reachedLeft || !reachedLeft : reachedLeft || reachedRight;
+	checkBoundaries() {
+		const leftOverstep = this.checkBoundary("left");
+		const rightOverstep = this.checkBoundary("right");
+		return leftOverstep || rightOverstep;
 	}
 
 
