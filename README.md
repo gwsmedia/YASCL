@@ -65,6 +65,13 @@ The carousel will start automatically and continue moving.
 default: `false`  
 Whether the carousel loops or not. If set to false, the carousel will hide the relevant arrow button once the end of beginning of the slider is reached.
 
+**slideToEdge**  
+default: `false`  
+Whether the slider will slide to the closest edge of the next item or not.  
+If _false_, the left edge of the next item will align with the left edge of the slider.  
+If _true_, the behaviour will remain the same when moving left, but when moving right the right edge of the next item will align with the right edge of the slider.
+
+
 **arrowSelector**  
 This will define arrows that can be used to control the slider. It should be a CSS class that the left and
 right arrows share. The right arrow should also have the class `right`.

@@ -103,6 +103,7 @@ export default class YASCL {
 
 			this.wrapper.removeClass("animating");
 
+			// TODO: add autoplay delay option
 			if (!reachedBoundary && this.wrapper.hasClass("autoplay")) {
 				this.animate(direction);
 			}
@@ -116,6 +117,7 @@ export default class YASCL {
 
 
 	getMovementDistance(direction) {
+		const slideToEdge = this.options.slideToEdge || false;
 		const innerLeft = this.inner.offset().left;
 
 		let start, end, operand;
@@ -128,11 +130,29 @@ export default class YASCL {
 			let item = jQuery(items[i]);
 			let itemLeft = item.offset().left;
 
-			if(
-				(direction == 'left' && itemLeft > innerLeft) ||
-				(direction == 'right' && itemLeft < innerLeft)
-			) {
-				return itemLeft - innerLeft;
+			if(direction == 'left') {
+				if(itemLeft > innerLeft) {
+
+					return itemLeft - innerLeft;
+
+				} else {
+
+					// TODO: add RTL option
+
+				}
+			} else if(direction == 'right') {
+				const innerRight = innerLeft + this.inner.outerWidth();
+				const itemRight = itemLeft + item.outerWidth();
+
+				if(slideToEdge && itemRight < innerRight) {
+
+					return itemRight - innerRight;
+
+				} else if(!slideToEdge && itemLeft < innerLeft) {
+
+					return itemLeft - innerLeft;
+
+				}
 			}
 		}
 	}
