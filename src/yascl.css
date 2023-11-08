@@ -7,13 +7,10 @@
   flex-direction: row;
   flex-wrap: nowrap;
   overflow: visible;
+  position: relative;
 }
 
 /* If parent and wrapper are the same, override default wrapper overflow */
 .yascl.yascl-wrapper {
   overflow: hidden;
-}
-
-.yascl-wrapper > * {
-  position: relative;
 }
