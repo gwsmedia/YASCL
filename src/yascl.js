@@ -1,6 +1,7 @@
 import './yascl.css';
 import jQuery from 'jquery';
 import DragHelper from './Helper/DragHelper';
+import ParseUtils from './Utils/ParseUtils';
 
 
 export default class YASCL {
@@ -99,6 +100,7 @@ export default class YASCL {
 		if(loop) this.moveLoopedItem(direction, "pre-animation");
 
 		// Get easing value
+		// TODO: create class for getting options values
 		const easing = this.options.easing || "linear";
 		// Get new position value
 		const right = this.getCurrentPos() + this.getMovementDistance(direction);
@@ -120,13 +122,14 @@ export default class YASCL {
 
 
 	getCurrentPos() {
-		return parseInt(this.wrapper.css('right').replace('px', ''));
+		return ParseUtils.pixelsToInt(this.wrapper.css('right'));
 	}
 
 
 	getMovementDistance(direction) {
 		const slideToEdge = this.options.slideToEdge || false;
-		const innerLeft = this.inner.offset().left;
+		// TODO: Refactor different wrappers to different classes?
+		const innerLeft = this.inner.offset().left + ParseUtils.pixelsToInt(this.inner.css('padding-left'));
 
 		let start, end, operand, distance = 0;
 		let items = this.wrapper.children();
@@ -225,7 +228,7 @@ export default class YASCL {
 		const items = this.wrapper.children();
 		const slide = direction == "left" ? items.last() : items.first();
 
-		const innerLeft = this.inner.offset().left;
+		const innerLeft = this.inner.offset().left + ParseUtils.pixelsToInt(this.inner.css('padding-left'));
 		const slideLeft = slide.offset().left;
 
 		if(direction == "left") {
