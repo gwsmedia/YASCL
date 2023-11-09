@@ -49,6 +49,10 @@ In other words if you have 5 items of width 100px, this container should have a 
 
 Multiple sliders can use the same selector and they will still be considered separate sliders.
 
+**arrowSelector**  
+This will define arrows that can be used to control the slider. It should be a CSS class that the left and
+right arrows share. The right arrow should also have the class `right`.
+
 **time**  
 default: `400`  
 A number in miliseconds determining how long for one of the carousel items to make one full movement.
@@ -65,16 +69,15 @@ The carousel will start automatically and continue moving.
 default: `false`  
 Whether the carousel loops or not. If set to false, the carousel will hide the relevant arrow button once the end of beginning of the slider is reached.
 
+**draggable**  
+default: `true`  
+Whether the carousel is draggable or not.
+
 **slideToEdge**  
 default: `false`  
 Whether the slider will slide to the closest edge of the next item or not.  
 If _false_, the left edge of the next item will align with the left edge of the slider.  
 If _true_, the behaviour will remain the same when moving left, but when moving right the right edge of the next item will align with the right edge of the slider.
-
-
-**arrowSelector**  
-This will define arrows that can be used to control the slider. It should be a CSS class that the left and
-right arrows share. The right arrow should also have the class `right`.
 
 **innerSelector**  
 This is a CSS selector for an optional inner container if a more complex structure is desired. This means you can use **selector** to define a perimiter

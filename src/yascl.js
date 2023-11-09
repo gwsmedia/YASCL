@@ -1,5 +1,6 @@
 import './yascl.css';
 import jQuery from 'jquery';
+import DragHelper from './Helper/DragHelper';
 
 
 export default class YASCL {
@@ -49,8 +50,13 @@ export default class YASCL {
 		// TODO: use transform instead of right
 		this.wrapper.css('right', '0px');
 
-		if (this.options.arrowSelector) {
+		if(this.options.arrowSelector) {
 			this.setArrowEvents();
+		}
+
+		if(this.options.draggable == undefined || this.options.draggable) {
+			this.dragHelper = new DragHelper(this.wrapper, this.inner);
+			this.dragHelper.addEvents(() => { return this.getCurrentPos() }, () => { this.checkBoundaries(); });
 		}
 
 		const boundaryCrossed = this.options.loop || this.checkBoundaries();
@@ -62,6 +68,8 @@ export default class YASCL {
 	}
 
 
+	// TODO: slideToEdge + loop + move right issue
+	// TODO: autoplay to end and have to click left twice to move
 	// Wrap all slider items in slider wrapper
 	wrapChildren() {
 		this.parent.addClass('yascl');
