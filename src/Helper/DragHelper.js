@@ -1,8 +1,10 @@
 
 export default class DragHelper {
-	constructor(wrapper, inner) {
+	constructor(wrapper, inner, getCurrentPos, checkBoundaries) {
 		this.wrapper = wrapper;
 		this.inner = inner;
+		this.getCurrentPos = getCurrentPos;
+		this.checkBoundaries = checkBoundaries;
 
 		this.x = 0;
 		this.mouseX = 0;
@@ -12,7 +14,43 @@ export default class DragHelper {
 		this.clickedLink = false;
 	}
 
-	addEvents(getCurrentPos, checkBoundaries) {
+	getClientX(event) {
+		if(['touchstart', 'touchmove','touchend'].includes(event.type)) {
+			return event.touches[0].clientX;
+		} else {
+			return event.clientX;
+		}
+	}
+
+	dragStart(event) {
+		this.moving = true;
+		this.movedX = 0;
+		this.startX = this.getCurrentPos();
+		this.startMouseX = this.getClientX(event);
+	}
+
+	dragEnd(event) {
+		this.moving = false;
+	}
+
+	dragMove(event) {
+		if(event.type == 'mousemove') event.preventDefault();
+		if(!this.moving) return;
+
+		this.movedX = this.startMouseX - this.getClientX(event);
+		this.x = this.startX + this.movedX;
+
+		const max = this.wrapper.outerWidth() - this.inner.outerWidth();
+
+		if(this.x < 0) this.x = 0;
+		else if(this.x > max) this.x = max;
+
+		jQuery(this.wrapper).css('right', this.x + 'px');
+
+		this.checkBoundaries();
+	}
+
+	addEvents() {
 		this.wrapper.children().click((event) => {
 			event.preventDefault();
 
@@ -22,32 +60,13 @@ export default class DragHelper {
 			}
 		});
 
-		this.wrapper.on("mousedown", (event) => {
-			this.moving = true;
-			this.movedX = 0;
-			this.startX = getCurrentPos();
-			this.startMouseX = event.clientX;
-		});
+		this.wrapper.on("mousedown", this.dragStart.bind(this));
+		this.wrapper.on("touchstart", this.dragStart.bind(this));
 
-		document.addEventListener("mouseup", (event) => {
-			this.moving = false;
-		});
+		document.addEventListener("mouseup", this.dragEnd.bind(this));
+		document.addEventListener("touchend", this.dragEnd.bind(this));
 
-		document.addEventListener("mousemove", (event) => {
-			event.preventDefault();
-			if(this.moving) {
-				this.movedX = this.startMouseX - event.clientX;
-				this.x = this.startX + this.movedX;
-
-				const max = this.wrapper.outerWidth() - this.inner.outerWidth();
-
-				if(this.x < 0) this.x = 0;
-				else if(this.x > max) this.x = max;
-
-				jQuery(this.wrapper).css('right', this.x + 'px');
-
-				checkBoundaries();
-			}
-		});
+		document.addEventListener("mousemove", this.dragMove.bind(this));
+		document.addEventListener("touchmove", this.dragMove.bind(this));
 	}
 }

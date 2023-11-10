@@ -56,8 +56,9 @@ export default class YASCL {
 		}
 
 		if(this.options.draggable == undefined || this.options.draggable) {
-			this.dragHelper = new DragHelper(this.wrapper, this.inner);
-			this.dragHelper.addEvents(() => { return this.getCurrentPos() }, () => { this.checkBoundaries(); });
+			// TODO: Kinda gross passing funcs as params like this. Refactor.
+			this.dragHelper = new DragHelper(this.wrapper, this.inner, () => { return this.getCurrentPos() }, () => { this.checkBoundaries(); });
+			this.dragHelper.addEvents();
 		}
 
 		const boundaryCrossed = this.options.loop || this.checkBoundaries();
