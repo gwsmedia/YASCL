@@ -5,6 +5,20 @@ import ParseUtils from './Utils/ParseUtils';
 
 
 export default class YASCL {
+	static get DIRECTION_FORWARDS() { return 0; }
+	static get DIRECTION_BACKWARDS() { return 1; }
+
+	static get STATE_PRE_ANIMATION() { return 0; }
+	static get STATE_POST_ANIMATION() { return 1; }
+
+	static get CLASS_PARENT() { return "yascl"; }
+	static get CLASS_WRAPPER() { return "yascl-wrapper"; }
+	static get CLASS_PROCESSING() { return "processing"; }
+	static get CLASS_ANIMATING() { return "animating"; }
+	static get CLASS_VERTICAL() { return "vertical"; }
+	static get CLASS_AUTOPLAY() { return "autoplay"; }
+	static get CLASS_NEXT_ARROW() { return "forwards"; }
+
 	constructor(options) {
 		this.options = options;
 
@@ -17,11 +31,10 @@ export default class YASCL {
 		}
 	}
 
-
 	initialise() {
 		this.parent = jQuery(this.options.selector);
 
-		if(this.parent.length === 0 || this.parent.hasClass('yascl')) {
+		if(this.parent.length === 0 || this.parent.hasClass(YASCL.CLASS_PARENT)) {
 			// Do not initialise if parent element cannot be found or has already been initialised.
 			return;
 		} else if(this.parent.length > 1) {
@@ -34,14 +47,14 @@ export default class YASCL {
 
 	initialiseMultiple() {
 		let options = this.options;
-		options.selector += '.processing';
+		options.selector += '.' + YASCL.CLASS_PROCESSING;
 		options.skipDomReady = true;
 
 		// Initialise each slider
 		this.parent.each(function() {
-			jQuery(this).addClass('processing');
+			jQuery(this).addClass(YASCL.CLASS_PROCESSING);
 			new YASCL(options);
-			jQuery(this).removeClass('processing');
+			jQuery(this).removeClass(YASCL.CLASS_PROCESSING);
 		});
 	}
 
@@ -52,7 +65,7 @@ export default class YASCL {
 		if(this.options.vertical != null && this.options.vertical) {
 			this.startSide = 'top';
 			this.endSide = 'bottom';
-			this.wrapper.addClass("vertical");
+			this.wrapper.addClass(YASCL.CLASS_VERTICAL);
 		} else {
 			this.startSide = 'left';
 			this.endSide = 'right';
@@ -61,6 +74,7 @@ export default class YASCL {
 
 		// TODO: use transform instead of position
 		this.wrapper.css(this.endSide, '0px');
+		this.checkBoundaries();
 
 		if(this.options.arrowSelector) {
 			this.setArrowEvents();
@@ -72,11 +86,9 @@ export default class YASCL {
 			this.dragHelper.addEvents();
 		}
 
-		const boundaryCrossed = this.options.loop || this.checkBoundaries();
-
-		if (boundaryCrossed && this.options.autoplay) {
-			this.wrapper.addClass("autoplay");
-			this.animate("backwards");
+		if (this.options.autoplay) {
+			this.wrapper.addClass(YASCL.CLASS_AUTOPLAY);
+			this.animate(YASCL.DIRECTION_BACKWARDS);
 		}
 	}
 
@@ -85,7 +97,7 @@ export default class YASCL {
 	// TODO: autoplay to end and have to click left twice to move
 	// Wrap all slider items in slider wrapper
 	wrapChildren() {
-		this.parent.addClass('yascl');
+		this.parent.addClass(YASCL.CLASS_PARENT);
 
 		// Find inner wrapper if defined
 		if(this.options.innerSelector) this.inner = this.parent.find(this.options.innerSelector);
@@ -93,23 +105,23 @@ export default class YASCL {
 		// If it counldn't be found, the parent and inner wrapper are the same
 		if(this.inner == null || this.inner.length === 0) this.inner = this.parent;
 
-		// Wrap children with .yascl-wrapper
-		this.inner.children().wrapAll('<div class="yascl-wrapper"></div>');
+		// Wrap children with wrapper class
+		this.inner.children().wrapAll('<div class="' + YASCL.CLASS_WRAPPER + '"></div>');
 
 		// Get new wrapper as object
-		this.wrapper = this.inner.children('.yascl-wrapper');
+		this.wrapper = this.inner.children('.' + YASCL.CLASS_WRAPPER);
 	}
 
 
 	// Entry point for slider movement
 	animate(direction) {
 		// If slider is already moving, ignore trigger
-		if (this.wrapper.hasClass("animating")) return;
-		this.wrapper.addClass("animating");
+		if (this.wrapper.hasClass(YASCL.CLASS_ANIMATING)) return;
+		this.wrapper.addClass(YASCL.CLASS_ANIMATING);
 
 		// Prepare looped item if moving right and prior to animation
 		const loop = this.options.loop || false;
-		if(loop) this.moveLoopedItem(direction, "pre-animation");
+		if(loop) this.moveLoopedItem(direction, YASCL.STATE_PRE_ANIMATION);
 
 		// Get easing value
 		// TODO: create class for getting options values
@@ -119,13 +131,13 @@ export default class YASCL {
 
 		this.wrapper.animate({ [this.endSide]: end }, this.options.time, easing, () => {
 			if(this.wrapper.find(":animated").length > 0) return;
-			this.wrapper.removeClass("animating");
+			this.wrapper.removeClass(YASCL.CLASS_ANIMATING);
 
-			if(loop) this.moveLoopedItem(direction, "post-animation");
+			if(loop) this.moveLoopedItem(direction, YASCL.STATE_POST_ANIMATION);
 			const boundaryCrossed = loop || this.checkBoundaries();
 
 			// TODO: add autoplay delay option
-			if (boundaryCrossed && this.wrapper.hasClass("autoplay")) {
+			if (boundaryCrossed && this.wrapper.hasClass(YASCL.CLASS_AUTOPLAY)) {
 				this.animate(direction);
 			}
 
@@ -146,25 +158,19 @@ export default class YASCL {
 		let start, end, operand, distance = 0;
 		let items = this.wrapper.children();
 
-		if (direction === 'backwards') start = 0, end = items.length, operand = 1;
+		if (direction === YASCL.DIRECTION_BACKWARDS) start = 0, end = items.length, operand = 1;
 		else start = items.length - 1, end = 0, operand = -1;
 
-		for(let i = start; direction == 'backwards' ? i < end : i >= end; i += operand) {
+		for(let i = start; direction === YASCL.DIRECTION_BACKWARDS ? i < end : i >= end; i += operand) {
 			let item = jQuery(items[i]);
 			let itemStart = item.offset()[this.startSide];
 
-			if(direction == 'backwards') {
-				if(itemStart > innerStart) {
+			if(direction === YASCL.DIRECTION_BACKWARDS && itemStart > innerStart) {
 
-					distance = itemStart - innerStart;
-					break;
+				distance = itemStart - innerStart;
+				break;
 
-				} else {
-
-					// TODO: add RTL option
-
-				}
-			} else if(direction == 'forwards') {
+			} else if(direction === YASCL.DIRECTION_FORWARDS) {
 				const innerEnd = innerStart + (this.options.vertical ? this.inner.outerHeight() : this.inner.outerWidth());
 				const itemEnd = itemStart + (this.options.vertical ? item.outerHeight() : item.outerWidth());
 
@@ -189,21 +195,20 @@ export default class YASCL {
 	}
 
 
-	// TODO: Move state values to constants
 	// Move items to continue loop
 	moveLoopedItem(direction, state) {
-		const eq = direction === "backwards" ? 0 : -1;
+		const eq = direction === YASCL.DIRECTION_BACKWARDS ? 0 : -1;
 		const items = this.wrapper.children();
 		// Get first or last item in set depending on direction
 		const item = items.eq(eq);
 
-		if (direction === "backwards" && state === "post-animation") {
+		if (direction === YASCL.DIRECTION_BACKWARDS && state === YASCL.STATE_POST_ANIMATION) {
 			// Move first item to end
 			item.appendTo(this.wrapper);
 			// Reset translation (would be offset otherwise,
 			// due to the first item moving to the end)
 			this.wrapper.css(this.endSide, "0px");
-		} else if (direction == "forwards" && state === "pre-animation") {
+		} else if (direction === YASCL.DIRECTION_FORWARDS && state === YASCL.STATE_PRE_ANIMATION) {
 			// Move last item to start
 			item.prependTo(this.wrapper);
 			// Get full size of item including margins
@@ -227,9 +232,9 @@ export default class YASCL {
 		// Add click events to each arrow
 		this.arrows.click((e) => {
 			// Assume backwards arrow unless has .forwards class
-			const direction = jQuery(e.currentTarget).hasClass("forwards") ? "backwards" : "forwards";
+			const direction = jQuery(e.currentTarget).hasClass(YASCL.CLASS_NEXT_ARROW) ? YASCL.DIRECTION_BACKWARDS : YASCL.DIRECTION_FORWARDS;
 			// If arrow clicked it should stop autoplay
-			this.wrapper.removeClass("autoplay");
+			this.wrapper.removeClass(YASCL.CLASS_AUTOPLAY);
 			// Trigger animation
 			this.animate(direction);
 		});
@@ -238,12 +243,12 @@ export default class YASCL {
 
 	getBoundaryOverstep(direction, asBool = false) {
 		const items = this.wrapper.children();
-		const slide = direction == "backwards" ? items.last() : items.first();
+		const slide = direction === YASCL.DIRECTION_BACKWARDS ? items.last() : items.first();
 
 		const innerStart = this.inner.offset()[this.startSide] + ParseUtils.pixelsToInt(this.inner.css('padding-' + this.startSide));
 		const slideStart = slide.offset()[this.startSide];
 
-		if(direction == "backwards") {
+		if(direction === YASCL.DIRECTION_BACKWARDS) {
 
 			const innerEnd = innerStart + (this.options.vertical ? this.inner.outerHeight() : this.inner.outerWidth());
 			const slideSize = this.options.vertical ? slide.outerHeight() : slide.outerWidth();
@@ -251,7 +256,7 @@ export default class YASCL {
 
 			return asBool ? slideEnd > innerEnd : slideEnd - innerEnd;
 
-		} else if(direction == "forwards") {
+		} else if(direction === YASCL.DIRECTION_FORWARDS) {
 
 			return asBool ? slideStart < innerStart : slideStart - innerStart;
 
@@ -259,12 +264,11 @@ export default class YASCL {
 	}
 
 
-	// TODO: Rename functions
 	checkBoundary(boundary) {
-		const direction = boundary === "start" ? "forwards" : "backwards";
+		const direction = boundary === "start" ? YASCL.DIRECTION_FORWARDS : YASCL.DIRECTION_BACKWARDS;
 		const isOverstep = this.getBoundaryOverstep(direction, true);
 
-		this.toggleArrow(boundary, isOverstep);
+		this.toggleArrow(direction, isOverstep);
 
 		return isOverstep;
 	}
@@ -284,10 +288,10 @@ export default class YASCL {
 
 		let arrowEl;
 
-		if (arrow == "forwards") {
-			arrowEl = this.arrows.filter(".forwards");
+		if (arrow === YASCL.DIRECTION_FORWARDS) {
+			arrowEl = this.arrows.not("." + YASCL.CLASS_NEXT_ARROW);
 		} else {
-			arrowEl = this.arrows.not(".forwards");
+			arrowEl = this.arrows.filter("." + YASCL.CLASS_NEXT_ARROW);
 		}
 
 		arrowEl.toggle(state);
