@@ -17,7 +17,7 @@ export default class YASCL {
 	static get CLASS_ANIMATING() { return "animating"; }
 	static get CLASS_VERTICAL() { return "vertical"; }
 	static get CLASS_AUTOPLAY() { return "autoplay"; }
-	static get CLASS_NEXT_ARROW() { return "forwards"; }
+	static get CLASS_PREV_ARROW() { return "prev"; }
 
 	constructor(options) {
 		this.options = options;
@@ -231,8 +231,16 @@ export default class YASCL {
 
 		// Add click events to each arrow
 		this.arrows.click((e) => {
-			// Assume backwards arrow unless has .forwards class
-			const direction = jQuery(e.currentTarget).hasClass(YASCL.CLASS_NEXT_ARROW) ? YASCL.DIRECTION_BACKWARDS : YASCL.DIRECTION_FORWARDS;
+			let direction;
+
+			// Legacy class check
+			if(jQuery(e.currentTarget).hasClass("right")) {
+				direction = YASCL.DIRECTION_BACKWARDS;
+			} else {
+				// Assume next arrow unless has prev arrow class
+				direction = jQuery(e.currentTarget).hasClass(YASCL.CLASS_PREV_ARROW) ? YASCL.DIRECTION_FORWARDS : YASCL.DIRECTION_BACKWARDS;
+			}
+
 			// If arrow clicked it should stop autoplay
 			this.wrapper.removeClass(YASCL.CLASS_AUTOPLAY);
 			// Trigger animation
@@ -283,15 +291,15 @@ export default class YASCL {
 
 
 	// Show / hide arrow
-	toggleArrow(arrow, state = true) {
+	toggleArrow(direction, state = true) {
 		if (this.arrows == null) return;
 
 		let arrowEl;
 
-		if (arrow === YASCL.DIRECTION_FORWARDS) {
-			arrowEl = this.arrows.not("." + YASCL.CLASS_NEXT_ARROW);
+		if (direction === YASCL.DIRECTION_FORWARDS) {
+			arrowEl = this.arrows.filter("." + YASCL.CLASS_PREV_ARROW);
 		} else {
-			arrowEl = this.arrows.filter("." + YASCL.CLASS_NEXT_ARROW);
+			arrowEl = this.arrows.not("." + YASCL.CLASS_PREV_ARROW);
 		}
 
 		arrowEl.toggle(state);

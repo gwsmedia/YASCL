@@ -50,8 +50,7 @@ In other words if you have 5 items of width 100px, this container should have a 
 Multiple sliders can use the same selector and they will still be considered separate sliders.
 
 **arrowSelector**  
-This will define arrows that can be used to control the slider. It should be a CSS class that the left and
-right arrows share. The right arrow should also have the class `right`.
+This will define arrows that can be used to control the slider. It should be a CSS class that the next and previous arrows share. The previous arrow **requires** the class `prev` to differentiate it.
 
 **time**  
 default: `400`  
@@ -80,8 +79,8 @@ Whether the carousel is vertical or horizontal.
 **slideToEdge**  
 default: `false`  
 Whether the slider will slide to the closest edge of the next item or not.  
-If _false_, the left edge of the next item will align with the left edge of the slider.  
-If _true_, the behaviour will remain the same when moving left, but when moving right the right edge of the next item will align with the right edge of the slider.
+If _false_, the top/left edge of the next item will align with the top/left edge of the slider.  
+If _true_, the behaviour will remain the same when moving up/left, but when moving down/right the bottom/right edge of the next item will align with the bottom/right edge of the slider.
 
 **innerSelector**  
 This is a CSS selector for an optional inner container if a more complex structure is desired. This means you can use **selector** to define a perimiter
