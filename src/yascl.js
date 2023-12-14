@@ -25,7 +25,7 @@ export default class YASCL {
 		if(this.options.skipDomReady != null && this.options.skipDomReady) {
 			this.initialise();
 		} else {
-			jQuery(() => {
+			jQuery(window).on('load', () => {
 				this.initialise();
 			});
 		}
