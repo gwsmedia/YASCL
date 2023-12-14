@@ -73,6 +73,10 @@ Whether the carousel loops or not. If set to false, the carousel will hide the r
 default: `true`  
 Whether the carousel is draggable or not.
 
+**vertical**  
+default: `false`  
+Whether the carousel is vertical or horizontal.
+
 **slideToEdge**  
 default: `false`  
 Whether the slider will slide to the closest edge of the next item or not.  

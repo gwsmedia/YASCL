@@ -48,8 +48,19 @@ export default class YASCL {
 
 	initialiseSingle() {
 		this.wrapChildren();
-		// TODO: use transform instead of right
-		this.wrapper.css('right', '0px');
+
+		if(this.options.vertical != null && this.options.vertical) {
+			this.startSide = 'top';
+			this.endSide = 'bottom';
+			this.wrapper.addClass("vertical");
+		} else {
+			this.startSide = 'left';
+			this.endSide = 'right';
+			this.options.vertical = false;
+		}
+
+		// TODO: use transform instead of position
+		this.wrapper.css(this.endSide, '0px');
 
 		if(this.options.arrowSelector) {
 			this.setArrowEvents();
@@ -57,7 +68,7 @@ export default class YASCL {
 
 		if(this.options.draggable == undefined || this.options.draggable) {
 			// TODO: Kinda gross passing funcs as params like this. Refactor.
-			this.dragHelper = new DragHelper(this.wrapper, this.inner, () => { return this.getCurrentPos() }, () => { this.checkBoundaries(); });
+			this.dragHelper = new DragHelper(this.wrapper, this.inner, this.options.vertical, () => { return this.getCurrentPos() }, () => { this.checkBoundaries(); });
 			this.dragHelper.addEvents();
 		}
 
@@ -65,7 +76,7 @@ export default class YASCL {
 
 		if (boundaryCrossed && this.options.autoplay) {
 			this.wrapper.addClass("autoplay");
-			this.animate("left");
+			this.animate("backwards");
 		}
 	}
 
@@ -104,48 +115,48 @@ export default class YASCL {
 		// TODO: create class for getting options values
 		const easing = this.options.easing || "linear";
 		// Get new position value
-		const right = this.getCurrentPos() + this.getMovementDistance(direction);
+		const end = this.getCurrentPos() + this.getMovementDistance(direction);
 
-		this.wrapper.animate({ right: right }, this.options.time, easing, () => {
+		this.wrapper.animate({ [this.endSide]: end }, this.options.time, easing, () => {
 			if(this.wrapper.find(":animated").length > 0) return;
 			this.wrapper.removeClass("animating");
 
 			if(loop) this.moveLoopedItem(direction, "post-animation");
 			const boundaryCrossed = loop || this.checkBoundaries();
 
-		// TODO: add autoplay delay option
-		if (boundaryCrossed && this.wrapper.hasClass("autoplay")) {
-			this.animate(direction);
-		}
+			// TODO: add autoplay delay option
+			if (boundaryCrossed && this.wrapper.hasClass("autoplay")) {
+				this.animate(direction);
+			}
 
 		});
 	}
 
 
 	getCurrentPos() {
-		return ParseUtils.pixelsToInt(this.wrapper.css('right'));
+		return ParseUtils.pixelsToInt(this.wrapper.css(this.endSide));
 	}
 
 
 	getMovementDistance(direction) {
 		const slideToEdge = this.options.slideToEdge || false;
 		// TODO: Refactor different wrappers to different classes?
-		const innerLeft = this.inner.offset().left + ParseUtils.pixelsToInt(this.inner.css('padding-left'));
+		const innerStart = this.inner.offset()[this.startSide] + ParseUtils.pixelsToInt(this.inner.css('padding-' + this.startSide));
 
 		let start, end, operand, distance = 0;
 		let items = this.wrapper.children();
 
-		if (direction === 'left') start = 0, end = items.length, operand = 1;
+		if (direction === 'backwards') start = 0, end = items.length, operand = 1;
 		else start = items.length - 1, end = 0, operand = -1;
 
-		for(let i = start; direction == 'left' ? i < end : i >= end; i += operand) {
+		for(let i = start; direction == 'backwards' ? i < end : i >= end; i += operand) {
 			let item = jQuery(items[i]);
-			let itemLeft = item.offset().left;
+			let itemStart = item.offset()[this.startSide];
 
-			if(direction == 'left') {
-				if(itemLeft > innerLeft) {
+			if(direction == 'backwards') {
+				if(itemStart > innerStart) {
 
-					distance = itemLeft - innerLeft;
+					distance = itemStart - innerStart;
 					break;
 
 				} else {
@@ -153,18 +164,18 @@ export default class YASCL {
 					// TODO: add RTL option
 
 				}
-			} else if(direction == 'right') {
-				const innerRight = innerLeft + this.inner.outerWidth();
-				const itemRight = itemLeft + item.outerWidth();
+			} else if(direction == 'forwards') {
+				const innerEnd = innerStart + (this.options.vertical ? this.inner.outerHeight() : this.inner.outerWidth());
+				const itemEnd = itemStart + (this.options.vertical ? item.outerHeight() : item.outerWidth());
 
-				if(slideToEdge && itemRight < innerRight) {
+				if(slideToEdge && itemEnd < innerEnd) {
 
-					distance = itemRight - innerRight;
+					distance = itemEnd - innerEnd;
 					break;
 
-				} else if(!slideToEdge && itemLeft < innerLeft) {
+				} else if(!slideToEdge && itemStart < innerStart) {
 
-					distance = itemLeft - innerLeft;
+					distance = itemStart - innerStart;
 					break;
 
 				}
@@ -181,24 +192,24 @@ export default class YASCL {
 	// TODO: Move state values to constants
 	// Move items to continue loop
 	moveLoopedItem(direction, state) {
-		const eq = direction === "left" ? 0 : -1;
+		const eq = direction === "backwards" ? 0 : -1;
 		const items = this.wrapper.children();
 		// Get first or last item in set depending on direction
 		const item = items.eq(eq);
 
-		if (direction === "left" && state === "post-animation") {
+		if (direction === "backwards" && state === "post-animation") {
 			// Move first item to end
 			item.appendTo(this.wrapper);
 			// Reset translation (would be offset otherwise,
 			// due to the first item moving to the end)
-			this.wrapper.css("right", "0px");
-		} else if (direction == "right" && state === "pre-animation") {
+			this.wrapper.css(this.endSide, "0px");
+		} else if (direction == "forwards" && state === "pre-animation") {
 			// Move last item to start
 			item.prependTo(this.wrapper);
-			// Get full width of item including margins
-			const width = item.outerWidth(true);
-			// Set translation to width of item ready to move into slider
-			this.wrapper.css("right", width);
+			// Get full size of item including margins
+			const size = this.options.vertical ? item.outerHeight(true) : item.outerWidth(true);
+			// Set translation to size of item ready to move into slider
+			this.wrapper.css(this.endSide, size);
 		}
 	}
 
@@ -215,8 +226,8 @@ export default class YASCL {
 
 		// Add click events to each arrow
 		this.arrows.click((e) => {
-			// Assume left arrow unless has .right class
-			const direction = jQuery(e.currentTarget).hasClass("right") ? "left" : "right";
+			// Assume backwards arrow unless has .forwards class
+			const direction = jQuery(e.currentTarget).hasClass("forwards") ? "backwards" : "forwards";
 			// If arrow clicked it should stop autoplay
 			this.wrapper.removeClass("autoplay");
 			// Trigger animation
@@ -227,31 +238,30 @@ export default class YASCL {
 
 	getBoundaryOverstep(direction, asBool = false) {
 		const items = this.wrapper.children();
-		const slide = direction == "left" ? items.last() : items.first();
+		const slide = direction == "backwards" ? items.last() : items.first();
 
-		const innerLeft = this.inner.offset().left + ParseUtils.pixelsToInt(this.inner.css('padding-left'));
-		const slideLeft = slide.offset().left;
+		const innerStart = this.inner.offset()[this.startSide] + ParseUtils.pixelsToInt(this.inner.css('padding-' + this.startSide));
+		const slideStart = slide.offset()[this.startSide];
 
-		if(direction == "left") {
+		if(direction == "backwards") {
 
-			const innerRight = innerLeft + this.inner.outerWidth();
-			const slideWidth = slide.outerWidth();
-			const slideRight = slideLeft + slideWidth;
+			const innerEnd = innerStart + (this.options.vertical ? this.inner.outerHeight() : this.inner.outerWidth());
+			const slideSize = this.options.vertical ? slide.outerHeight() : slide.outerWidth();
+			const slideEnd = slideStart + slideSize;
 
-			return asBool ? slideRight > innerRight : slideRight - innerRight;
+			return asBool ? slideEnd > innerEnd : slideEnd - innerEnd;
 
-		} else if(direction == "right") {
+		} else if(direction == "forwards") {
 
-			return asBool ? slideLeft < innerLeft : slideLeft - innerLeft;
+			return asBool ? slideStart < innerStart : slideStart - innerStart;
 
 		}
 	}
 
 
-	// TODO: Sort out arrow/direction/boundary left/right confusion
 	// TODO: Rename functions
 	checkBoundary(boundary) {
-		const direction = boundary === "left" ? "right" : "left";
+		const direction = boundary === "start" ? "forwards" : "backwards";
 		const isOverstep = this.getBoundaryOverstep(direction, true);
 
 		this.toggleArrow(boundary, isOverstep);
@@ -262,9 +272,9 @@ export default class YASCL {
 
 	// Check boundaries on both sides
 	checkBoundaries() {
-		const leftOverstep = this.checkBoundary("left");
-		const rightOverstep = this.checkBoundary("right");
-		return leftOverstep || rightOverstep;
+		const startOverstep = this.checkBoundary("start");
+		const endOverstep = this.checkBoundary("end");
+		return startOverstep || endOverstep;
 	}
 
 
@@ -274,10 +284,10 @@ export default class YASCL {
 
 		let arrowEl;
 
-		if (arrow == "right") {
-			arrowEl = this.arrows.filter(".right");
+		if (arrow == "forwards") {
+			arrowEl = this.arrows.filter(".forwards");
 		} else {
-			arrowEl = this.arrows.not(".right");
+			arrowEl = this.arrows.not(".forwards");
 		}
 
 		arrowEl.toggle(state);

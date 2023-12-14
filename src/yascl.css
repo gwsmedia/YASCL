@@ -14,3 +14,7 @@
 .yascl.yascl-wrapper {
   overflow: hidden;
 }
+
+.yascl-wrapper.vertical {
+    flex-direction: column;
+}
