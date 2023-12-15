@@ -82,11 +82,11 @@ export default class YASCL {
 			this.setArrowEvents();
 		}
 
-		this.checkBoundaries();
+		this.updateArrowVisibility();
 
 		if(this.options.draggable) {
 			// TODO: Kinda gross passing funcs as params like this. Refactor.
-			this.dragHelper = new DragHelper(this.wrapper, this.inner, this.options.vertical, () => { return this.getCurrentPos() }, () => { this.checkBoundaries(); });
+			this.dragHelper = new DragHelper(this.wrapper, this.inner, this.options.vertical, () => { return this.getCurrentPos() }, () => { this.updateArrowVisibility(); });
 			this.dragHelper.addEvents();
 		}
 
@@ -134,13 +134,15 @@ export default class YASCL {
 			this.wrapper.removeClass(YASCL.CLASS_ANIMATING);
 
 			if(this.options.loop) this.moveLoopedItem(direction, YASCL.STATE_POST_ANIMATION);
-			const boundaryCrossed = this.options.loop || this.checkBoundaries();
+
+			this.updateArrowVisibility();
+
+			const boundaryCrossed = this.boundaryCrossed(direction == YASCL.DIRECTION_FORWARDS ? this.startSide : this.endSide);
 
 			// TODO: add autoplay delay option
-			if (boundaryCrossed && this.wrapper.hasClass(YASCL.CLASS_AUTOPLAY)) {
+			if ((this.options.loop || boundaryCrossed) && this.wrapper.hasClass(YASCL.CLASS_AUTOPLAY)) {
 				this.animate(direction);
 			}
-
 		});
 	}
 
@@ -187,7 +189,7 @@ export default class YASCL {
 			}
 		}
 
-		const overstep = this.getBoundaryOverstep(direction);
+		const overstep = this.getBoundaryOverstep(direction === YASCL.DIRECTION_FORWARDS ? this.startSide : this.endSide);
 		if(Math.abs(distance) > Math.abs(overstep)) distance = overstep;
 
 		return distance;
@@ -251,14 +253,18 @@ export default class YASCL {
 	}
 
 
-	getBoundaryOverstep(direction, asBool = false) {
+	getBoundaryOverstep(boundary, asBool = false) {
 		const items = this.wrapper.children();
-		const slide = direction === YASCL.DIRECTION_BACKWARDS ? items.last() : items.first();
+		const slide = boundary == this.startSide ? items.first() : items.last();
 
 		const innerStart = this.inner.offset()[this.startSide] + ParseUtils.pixelsToInt(this.inner.css('padding-' + this.startSide));
 		const slideStart = slide.offset()[this.startSide];
 
-		if(direction === YASCL.DIRECTION_BACKWARDS) {
+		if(boundary == this.startSide) {
+
+			return asBool ? slideStart < innerStart : slideStart - innerStart;
+
+		} else if(boundary == this.endSide) {
 
 			const innerEnd = innerStart + (this.options.vertical ? this.inner.outerHeight() : this.inner.outerWidth());
 			const slideSize = this.options.vertical ? slide.outerHeight() : slide.outerWidth();
@@ -266,39 +272,28 @@ export default class YASCL {
 
 			return asBool ? slideEnd > innerEnd : slideEnd - innerEnd;
 
-		} else if(direction === YASCL.DIRECTION_FORWARDS) {
-
-			return asBool ? slideStart < innerStart : slideStart - innerStart;
-
 		}
 	}
 
 
-	checkBoundary(boundary) {
-		const direction = boundary === "start" ? YASCL.DIRECTION_FORWARDS : YASCL.DIRECTION_BACKWARDS;
-		const isOverstep = this.getBoundaryOverstep(direction, true);
-
-		this.toggleArrow(direction, isOverstep || this.options.loop);
-
-		return isOverstep;
+	boundaryCrossed(boundary) {
+		return this.getBoundaryOverstep(boundary, true);
 	}
 
 
-	// Check boundaries on both sides
-	checkBoundaries() {
-		const startOverstep = this.checkBoundary("start");
-		const endOverstep = this.checkBoundary("end");
-		return startOverstep || endOverstep;
+	updateArrowVisibility() {
+		this.toggleArrow(this.startSide, this.options.loop || this.boundaryCrossed(this.startSide));
+		this.toggleArrow(this.endSide, this.options.loop || this.boundaryCrossed(this.endSide));
 	}
 
 
 	// Show / hide arrow
-	toggleArrow(direction, state = true) {
+	toggleArrow(side, state = true) {
 		if (this.arrows == null) return;
 
 		let arrowEl;
 
-		if (direction === YASCL.DIRECTION_FORWARDS) {
+		if (side == this.startSide) {
 			arrowEl = this.arrows.filter("." + YASCL.CLASS_PREV_ARROW);
 		} else {
 			arrowEl = this.arrows.not("." + YASCL.CLASS_PREV_ARROW);

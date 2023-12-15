@@ -1,11 +1,11 @@
 
 export default class DragHelper {
-	constructor(wrapper, inner, vertical, getCurrentPos, checkBoundaries) {
+	constructor(wrapper, inner, vertical, getCurrentPos, updateArrowVisibility) {
 		this.wrapper = wrapper;
 		this.inner = inner;
 		this.vertical = vertical;
 		this.getCurrentPos = getCurrentPos;
-		this.checkBoundaries = checkBoundaries;
+		this.updateArrowVisibility = updateArrowVisibility;
 
 		this.pos = 0;
 		this.mousePos = 0;
@@ -54,7 +54,7 @@ export default class DragHelper {
 
 		jQuery(this.wrapper).css(this.vertical ? 'bottom' : 'right', this.pos + 'px');
 
-		this.checkBoundaries();
+		this.updateArrowVisibility();
 	}
 
 	addEvents() {
