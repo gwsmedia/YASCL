@@ -237,13 +237,22 @@ export default class YASCL {
 		this.arrows.click((e) => {
 			let direction;
 
+			// DEPRECATION START
 			// Legacy class check
-			if(jQuery(e.currentTarget).hasClass("right")) {
-				direction = YASCL.DIRECTION_BACKWARDS;
+			let legacyArrow = this.arrows.filter(".right");
+			if(legacyArrow.length > 0) {
+
+				direction = jQuery(e.currentTarget).hasClass("right") ? YASCL.DIRECTION_BACKWARDS : YASCL.DIRECTION_FORWARDS;
+
 			} else {
+			// DEPRECATION END
+
 				// Assume next arrow unless has prev arrow class
 				direction = jQuery(e.currentTarget).hasClass(YASCL.CLASS_PREV_ARROW) ? YASCL.DIRECTION_FORWARDS : YASCL.DIRECTION_BACKWARDS;
+
+			// DEPRECATION START
 			}
+			// DEPRECATION END
 
 			// If arrow clicked it should stop autoplay
 			this.wrapper.removeClass(YASCL.CLASS_AUTOPLAY);
@@ -289,11 +298,30 @@ export default class YASCL {
 
 	// Show / hide arrow
 	toggleArrow(side, state = true) {
-		if (this.arrows == null) return;
+		if(this.arrows == null) return;
 
 		let arrowEl;
 
-		if (side == this.startSide) {
+		
+		// DEPRECATION START
+		// If legacy arrow class found, use that instead -- to be removed
+		let legacyArrow = this.arrows.filter(".right");
+		if(legacyArrow.length > 0) {
+			if(side == this.startSide) {
+				arrowEl = this.arrows.not(".right");
+			} else {
+				arrowEl = legacyArrow;
+			}
+
+			console.log("DEPRECATION: " + state);
+			console.log(arrowEl);
+			arrowEl.toggle(state);
+			return;
+		}
+		// DEPRECATION END
+
+
+		if(side == this.startSide) {
 			arrowEl = this.arrows.filter("." + YASCL.CLASS_PREV_ARROW);
 		} else {
 			arrowEl = this.arrows.not("." + YASCL.CLASS_PREV_ARROW);
