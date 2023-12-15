@@ -75,6 +75,8 @@ export default class YASCL {
 		// TODO: use transform instead of position
 		this.wrapper.css(this.endSide, '0px');
 
+		if(this.options.loop == null) this.options.loop = false;
+
 		if(this.options.arrowSelector) {
 			this.prepareArrows();
 			this.setArrowEvents();
@@ -122,8 +124,7 @@ export default class YASCL {
 		this.wrapper.addClass(YASCL.CLASS_ANIMATING);
 
 		// Prepare looped item if moving right and prior to animation
-		const loop = this.options.loop || false;
-		if(loop) this.moveLoopedItem(direction, YASCL.STATE_PRE_ANIMATION);
+		if(this.options.loop) this.moveLoopedItem(direction, YASCL.STATE_PRE_ANIMATION);
 
 		// Get easing value
 		// TODO: create class for getting options values
@@ -135,8 +136,8 @@ export default class YASCL {
 			if(this.wrapper.find(":animated").length > 0) return;
 			this.wrapper.removeClass(YASCL.CLASS_ANIMATING);
 
-			if(loop) this.moveLoopedItem(direction, YASCL.STATE_POST_ANIMATION);
-			const boundaryCrossed = loop || this.checkBoundaries();
+			if(this.options.loop) this.moveLoopedItem(direction, YASCL.STATE_POST_ANIMATION);
+			const boundaryCrossed = this.options.loop || this.checkBoundaries();
 
 			// TODO: add autoplay delay option
 			if (boundaryCrossed && this.wrapper.hasClass(YASCL.CLASS_AUTOPLAY)) {
@@ -281,7 +282,7 @@ export default class YASCL {
 		const direction = boundary === "start" ? YASCL.DIRECTION_FORWARDS : YASCL.DIRECTION_BACKWARDS;
 		const isOverstep = this.getBoundaryOverstep(direction, true);
 
-		this.toggleArrow(direction, isOverstep);
+		this.toggleArrow(direction, isOverstep || this.options.loop);
 
 		return isOverstep;
 	}
