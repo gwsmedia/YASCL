@@ -1,5 +1,6 @@
 import './yascl.css';
 import jQuery from 'jquery';
+import Options from './Helper/Options';
 import DragHelper from './Helper/DragHelper';
 import ParseUtils from './Utils/ParseUtils';
 
@@ -20,9 +21,9 @@ export default class YASCL {
 	static get CLASS_PREV_ARROW() { return "prev"; }
 
 	constructor(options) {
-		this.options = options;
+		this.options = new Options(options);
 
-		if(this.options.skipDomReady != null && this.options.skipDomReady) {
+		if(this.options.skipDomReady) {
 			this.initialise();
 		} else {
 			jQuery(window).on('load', () => {
@@ -46,7 +47,7 @@ export default class YASCL {
 
 
 	initialiseMultiple() {
-		let options = this.options;
+		let options = this.options.getAll();
 		options.selector += '.' + YASCL.CLASS_PROCESSING;
 		options.skipDomReady = true;
 
@@ -62,20 +63,17 @@ export default class YASCL {
 	initialiseSingle() {
 		this.wrapChildren();
 
-		if(this.options.vertical != null && this.options.vertical) {
+		if(this.options.vertical) {
 			this.startSide = 'top';
 			this.endSide = 'bottom';
 			this.wrapper.addClass(YASCL.CLASS_VERTICAL);
 		} else {
 			this.startSide = 'left';
 			this.endSide = 'right';
-			this.options.vertical = false;
 		}
 
 		// TODO: use transform instead of position
 		this.wrapper.css(this.endSide, '0px');
-
-		if(this.options.loop == null) this.options.loop = false;
 
 		if(this.options.arrowSelector) {
 			this.prepareArrows();
@@ -84,7 +82,7 @@ export default class YASCL {
 
 		this.checkBoundaries();
 
-		if(this.options.draggable == undefined || this.options.draggable) {
+		if(this.options.draggable) {
 			// TODO: Kinda gross passing funcs as params like this. Refactor.
 			this.dragHelper = new DragHelper(this.wrapper, this.inner, this.options.vertical, () => { return this.getCurrentPos() }, () => { this.checkBoundaries(); });
 			this.dragHelper.addEvents();
@@ -126,13 +124,10 @@ export default class YASCL {
 		// Prepare looped item if moving right and prior to animation
 		if(this.options.loop) this.moveLoopedItem(direction, YASCL.STATE_PRE_ANIMATION);
 
-		// Get easing value
-		// TODO: create class for getting options values
-		const easing = this.options.easing || "linear";
 		// Get new position value
 		const end = this.getCurrentPos() + this.getMovementDistance(direction);
 
-		this.wrapper.animate({ [this.endSide]: end }, this.options.time, easing, () => {
+		this.wrapper.animate({ [this.endSide]: end }, this.options.time, this.options.easing, () => {
 			if(this.wrapper.find(":animated").length > 0) return;
 			this.wrapper.removeClass(YASCL.CLASS_ANIMATING);
 
@@ -154,7 +149,6 @@ export default class YASCL {
 
 
 	getMovementDistance(direction) {
-		const slideToEdge = this.options.slideToEdge || false;
 		// TODO: Refactor different wrappers to different classes?
 		const innerStart = this.inner.offset()[this.startSide] + ParseUtils.pixelsToInt(this.inner.css('padding-' + this.startSide));
 
@@ -177,12 +171,12 @@ export default class YASCL {
 				const innerEnd = innerStart + (this.options.vertical ? this.inner.outerHeight() : this.inner.outerWidth());
 				const itemEnd = itemStart + (this.options.vertical ? item.outerHeight() : item.outerWidth());
 
-				if(slideToEdge && itemEnd < innerEnd) {
+				if(this.options.slideToEdge && itemEnd < innerEnd) {
 
 					distance = itemEnd - innerEnd;
 					break;
 
-				} else if(!slideToEdge && itemStart < innerStart) {
+				} else if(!this.options.slideToEdge && itemStart < innerStart) {
 
 					distance = itemStart - innerStart;
 					break;
@@ -223,7 +217,7 @@ export default class YASCL {
 
 
 	prepareArrows() {
-		if(this.options.localArrows != null && this.options.localArrows) {
+		if(this.options.localArrows) {
 			// If localArrows is true, search for arrows in parent element
 			this.arrows = this.parent.find(this.options.arrowSelector);
 		} else {
