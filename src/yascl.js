@@ -74,11 +74,13 @@ export default class YASCL {
 
 		// TODO: use transform instead of position
 		this.wrapper.css(this.endSide, '0px');
-		this.checkBoundaries();
 
 		if(this.options.arrowSelector) {
+			this.prepareArrows();
 			this.setArrowEvents();
 		}
+
+		this.checkBoundaries();
 
 		if(this.options.draggable == undefined || this.options.draggable) {
 			// TODO: Kinda gross passing funcs as params like this. Refactor.
@@ -219,8 +221,7 @@ export default class YASCL {
 	}
 
 
-	// Set click events for navigation arrows
-	setArrowEvents() {
+	prepareArrows() {
 		if(this.options.localArrows != null && this.options.localArrows) {
 			// If localArrows is true, search for arrows in parent element
 			this.arrows = this.parent.find(this.options.arrowSelector);
@@ -228,7 +229,11 @@ export default class YASCL {
 			// Else search DOM for arrows
 			this.arrows = jQuery(this.options.arrowSelector);
 		}
+	}
 
+
+	// Set click events for navigation arrows
+	setArrowEvents() {
 		// Add click events to each arrow
 		this.arrows.click((e) => {
 			let direction;
