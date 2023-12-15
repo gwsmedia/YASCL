@@ -266,8 +266,9 @@ export default class YASCL {
 		const items = this.wrapper.children();
 		const slide = boundary == this.startSide ? items.first() : items.last();
 
-		const innerStart = this.inner.offset()[this.startSide] + ParseUtils.pixelsToInt(this.inner.css('padding-' + this.startSide));
-		const slideStart = slide.offset()[this.startSide];
+		const innerStartPadding = ParseUtils.pixelsToInt(this.inner.css('padding-' + this.startSide));
+		const innerStart = Math.round(this.inner.offset()[this.startSide] + innerStartPadding);
+		const slideStart = Math.round(slide.offset()[this.startSide]);
 
 		if(boundary == this.startSide) {
 
@@ -275,9 +276,11 @@ export default class YASCL {
 
 		} else if(boundary == this.endSide) {
 
-			const innerEnd = innerStart + (this.options.vertical ? this.inner.outerHeight() : this.inner.outerWidth());
+			const innerSize = this.options.vertical ? this.inner.outerHeight() : this.inner.outerWidth();
+			const innerEnd = Math.round(innerStart + innerSize);
+
 			const slideSize = this.options.vertical ? slide.outerHeight() : slide.outerWidth();
-			const slideEnd = slideStart + slideSize;
+			const slideEnd = Math.round(slideStart + slideSize);
 
 			return asBool ? slideEnd > innerEnd : slideEnd - innerEnd;
 
