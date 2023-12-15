@@ -1,5 +1,5 @@
 
-import defaults from '../config/defaultOptions.js';
+import defaults from '../config/defaultOptions';
 
 export default class Options {
 	constructor(options) {

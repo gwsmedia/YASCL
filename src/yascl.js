@@ -73,7 +73,9 @@ export default class YASCL {
 		}
 
 		// TODO: use transform instead of position
-		this.wrapper.css(this.endSide, '0px');
+		const innerSize = this.options.vertical ? this.inner.outerHeight() : this.inner.outerWidth();
+		const wrapperSize = this.options.vertical ? this.wrapper.outerHeight() : this.wrapper.outerWidth();
+		this.wrapper.css(this.endSide, this.options.reverse ? wrapperSize - innerSize : '0px');
 
 		if(this.options.arrowSelector) {
 			this.prepareArrows();
@@ -88,9 +90,9 @@ export default class YASCL {
 			this.dragHelper.addEvents();
 		}
 
-		if (this.options.autoplay) {
+		if(this.options.autoplay) {
 			this.wrapper.addClass(YASCL.CLASS_AUTOPLAY);
-			this.animate(YASCL.DIRECTION_BACKWARDS);
+			this.animate(this.options.reverse ? YASCL.DIRECTION_FORWARDS : YASCL.DIRECTION_BACKWARDS);
 		}
 	}
 

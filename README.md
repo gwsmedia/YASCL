@@ -62,7 +62,11 @@ The easing method of the animation. Can be `swing` or `linear`.
 
 **autoplay**  
 default: `false`  
-The carousel will start automatically and continue moving.
+The carousel will start automatically and continue moving. See **reverse** for changing the default direction.
+
+**reverse**  
+default: `false`  
+By default, the carousel moves from the left slide to the right, or top to bottom if it is vertical. Setting this value to true will invert this. Often called *rtl*.
 
 **loop**  
 default: `false`  
