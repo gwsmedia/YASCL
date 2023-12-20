@@ -50,7 +50,7 @@ In other words if you have 5 items of width 100px, this container should have a 
 Multiple sliders can use the same selector and they will still be considered separate sliders.
 
 **arrowSelector**  
-This will define arrows that can be used to control the slider. It should be a CSS class that the next and previous arrows share. The previous arrow **requires** the class `prev` to differentiate it.
+This will define arrows that can be used to control the slider. It should be a CSS class that the next and previous arrows share. The previous arrow **requires** the class `prev` to differentiate it. **The `right` class is now deprecated and functionality based on it will be removed in a further release.**
 
 **time**  
 default: `400`  
@@ -70,7 +70,7 @@ By default, the carousel moves from the left slide to the right, or top to botto
 
 **loop**  
 default: `false`  
-Whether the carousel loops or not. If set to false, the carousel will hide the relevant arrow button once the end of beginning of the slider is reached.
+Whether the carousel loops or not. If set to false, the carousel will hide the relevant arrow button once the beginning or end of the slider is reached.
 
 **draggable**  
 default: `true`  
@@ -97,13 +97,20 @@ default: `false`
 If true, the **arrowSelector** will only be searched for as a descendent of **selector**. In such a case you will need to have an **innerSelector** defined so the
 arrows are not considered slider items. This can be useful if the arrows do not have unique **arrowSelector**s.
 
+### Methods
+**slideTo(slideNum)**  
+This can be called to slide to a specific item. Slide numbers begin at 0.  
+At the moment **loop** changes the slide numbers but this will be remedied in a future version.
+
 ### Example
 ```
-new YASCL({
+var yascl = new YASCL({
 	selector: '#page-wrapper .slider',
 	time: 600,
 	easing: 'swing',
 	autoplay: true,
 	arrowSelector: '.arrow'
 });
+
+yascl.slideTo(2);
 ```
