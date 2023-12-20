@@ -8,6 +8,7 @@ import ParseUtils from './Utils/ParseUtils';
 export default class YASCL {
 	static get DIRECTION_FORWARDS() { return 0; }
 	static get DIRECTION_BACKWARDS() { return 1; }
+	static get DIRECTION_UNKNOWN() { return 2; }
 
 	static get STATE_PRE_ANIMATION() { return 0; }
 	static get STATE_POST_ANIMATION() { return 1; }
@@ -92,13 +93,12 @@ export default class YASCL {
 
 		if(this.options.autoplay) {
 			this.wrapper.addClass(YASCL.CLASS_AUTOPLAY);
-			this.animate(this.options.reverse ? YASCL.DIRECTION_FORWARDS : YASCL.DIRECTION_BACKWARDS);
+			this.slide(this.options.reverse ? YASCL.DIRECTION_FORWARDS : YASCL.DIRECTION_BACKWARDS);
 		}
 	}
 
 
 	// TODO: slideToEdge + loop + move right issue
-	// TODO: autoplay to end and have to click left twice to move
 	// Wrap all slider items in slider wrapper
 	wrapChildren() {
 		this.parent.addClass(YASCL.CLASS_PARENT);
@@ -118,7 +118,7 @@ export default class YASCL {
 
 
 	// Entry point for slider movement
-	animate(direction) {
+	slide(direction, slideNum = null) {
 		// If slider is already moving, ignore trigger
 		if (this.wrapper.hasClass(YASCL.CLASS_ANIMATING)) return;
 		this.wrapper.addClass(YASCL.CLASS_ANIMATING);
@@ -127,7 +127,7 @@ export default class YASCL {
 		if(this.options.loop) this.moveLoopedItem(direction, YASCL.STATE_PRE_ANIMATION);
 
 		// Get new position value
-		const end = this.getCurrentPos() + this.getMovementDistance(direction);
+		const end = this.getCurrentPos() + this.getMovementDistance(direction, slideNum);
 
 		this.wrapper.animate({ [this.endSide]: end }, this.options.time, this.options.easing, () => {
 			if(this.wrapper.find(":animated").length > 0) return;
@@ -141,9 +141,16 @@ export default class YASCL {
 
 			// TODO: add autoplay delay option
 			if ((this.options.loop || boundaryCrossed) && this.wrapper.hasClass(YASCL.CLASS_AUTOPLAY)) {
-				this.animate(direction);
+				this.slide(direction);
 			}
 		});
+	}
+
+
+	slideTo(slideNum) {
+		if(slideNum < 0 || slideNum > this.wrapper.children().length) return;
+		this.wrapper.removeClass(YASCL.CLASS_AUTOPLAY + ' ' + YASCL.CLASS_ANIMATING);
+		this.slide(YASCL.DIRECTION_UNKNOWN, slideNum);
 	}
 
 
@@ -152,37 +159,44 @@ export default class YASCL {
 	}
 
 
-	getMovementDistance(direction) {
+	getMovementDistance(direction, slideNum = null) {
 		// TODO: Refactor different wrappers to different classes?
 		const innerStart = this.inner.offset()[this.startSide] + ParseUtils.pixelsToInt(this.inner.css('padding-' + this.startSide));
 
 		let start, end, operand, distance = 0;
 		let items = this.wrapper.children();
 
-		if (direction === YASCL.DIRECTION_BACKWARDS) start = 0, end = items.length, operand = 1;
+		if(slideNum != null) start = slideNum, end = slideNum + 1, operand = 1;
+		else if (direction === YASCL.DIRECTION_BACKWARDS) start = 0, end = items.length, operand = 1;
 		else start = items.length - 1, end = 0, operand = -1;
 
-		for(let i = start; direction === YASCL.DIRECTION_BACKWARDS ? i < end : i >= end; i += operand) {
-			let item = jQuery(items[i]);
-			let itemStart = item.offset()[this.startSide];
+		for(let i = start; slideNum != null || direction === YASCL.DIRECTION_BACKWARDS ? i < end : i >= end; i += operand) {
+			const item = jQuery(items[i]);
+			const itemStart = item.offset()[this.startSide];
 
-			if(direction === YASCL.DIRECTION_BACKWARDS && itemStart > innerStart) {
-
+			// if direction BACKWARDS or UNKNOWN
+			if(direction !== YASCL.DIRECTION_FORWARDS && itemStart > innerStart) {
 				distance = itemStart - innerStart;
+				if(direction === YASCL.DIRECTION_UNKNOWN) direction = YASCL.DIRECTION_BACKWARDS;
 				break;
+			}
 
-			} else if(direction === YASCL.DIRECTION_FORWARDS) {
+			// if direction FORWARDS or UNKNOWN
+			// Not using else intentionally - we want this to run if DIRECTION_UNKNOWN didn't reach break above
+			if(direction !== YASCL.DIRECTION_BACKWARDS) {
 				const innerEnd = innerStart + (this.options.vertical ? this.inner.outerHeight() : this.inner.outerWidth());
 				const itemEnd = itemStart + (this.options.vertical ? item.outerHeight() : item.outerWidth());
 
 				if(this.options.slideToEdge && itemEnd < innerEnd) {
 
 					distance = itemEnd - innerEnd;
+					if(direction === YASCL.DIRECTION_UNKNOWN) direction = YASCL.DIRECTION_FORWARDS;
 					break;
 
 				} else if(!this.options.slideToEdge && itemStart < innerStart) {
 
 					distance = itemStart - innerStart;
+					if(direction === YASCL.DIRECTION_UNKNOWN) direction = YASCL.DIRECTION_FORWARDS;
 					break;
 
 				}
@@ -245,19 +259,19 @@ export default class YASCL {
 				direction = jQuery(e.currentTarget).hasClass("right") ? YASCL.DIRECTION_BACKWARDS : YASCL.DIRECTION_FORWARDS;
 
 			} else {
-			// DEPRECATION END
+				// DEPRECATION END
 
 				// Assume next arrow unless has prev arrow class
 				direction = jQuery(e.currentTarget).hasClass(YASCL.CLASS_PREV_ARROW) ? YASCL.DIRECTION_FORWARDS : YASCL.DIRECTION_BACKWARDS;
 
-			// DEPRECATION START
+				// DEPRECATION START
 			}
 			// DEPRECATION END
 
 			// If arrow clicked it should stop autoplay
 			this.wrapper.removeClass(YASCL.CLASS_AUTOPLAY);
 			// Trigger animation
-			this.animate(direction);
+			this.slide(direction);
 		});
 	}
 
@@ -305,7 +319,6 @@ export default class YASCL {
 
 		let arrowEl;
 
-		
 		// DEPRECATION START
 		// If legacy arrow class found, use that instead -- to be removed
 		let legacyArrow = this.arrows.filter(".right");
@@ -316,13 +329,10 @@ export default class YASCL {
 				arrowEl = legacyArrow;
 			}
 
-			console.log("DEPRECATION: " + state);
-			console.log(arrowEl);
 			arrowEl.toggle(state);
 			return;
 		}
 		// DEPRECATION END
-
 
 		if(side == this.startSide) {
 			arrowEl = this.arrows.filter("." + YASCL.CLASS_PREV_ARROW);
