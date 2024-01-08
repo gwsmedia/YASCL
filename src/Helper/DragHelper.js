@@ -1,11 +1,12 @@
 
 export default class DragHelper {
-	constructor(wrapper, inner, vertical, getCurrentPos, updateArrowVisibility) {
+	constructor(wrapper, inner, vertical, getCurrentPos, updateArrowVisibility, cancelSliding) {
 		this.wrapper = wrapper;
 		this.inner = inner;
 		this.vertical = vertical;
 		this.getCurrentPos = getCurrentPos;
 		this.updateArrowVisibility = updateArrowVisibility;
+		this.cancelSliding = cancelSliding;
 
 		this.pos = 0;
 		this.mousePos = 0;
@@ -28,6 +29,7 @@ export default class DragHelper {
 	}
 
 	dragStart(event) {
+		this.cancelSliding();
 		this.moving = true;
 		this.movedPos = 0;
 		this.startPos = this.getCurrentPos();

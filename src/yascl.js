@@ -90,7 +90,7 @@ export default class YASCL {
 
 		if(this.options.draggable) {
 			// TODO: Kinda gross passing funcs as params like this. Refactor.
-			this.dragHelper = new DragHelper(this.wrapper, this.inner, this.options.vertical, () => { return this.getCurrentPos() }, () => { this.updateArrowVisibility(); });
+			this.dragHelper = new DragHelper(this.wrapper, this.inner, this.options.vertical, () => { return this.getCurrentPos() }, () => { this.updateArrowVisibility(); }, () => { this.cancelSliding() });
 			this.dragHelper.addEvents();
 		}
 
