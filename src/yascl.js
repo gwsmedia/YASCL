@@ -94,7 +94,7 @@ export default class YASCL {
 
 		if(this.options.autoplay) {
 			this.wrapper.addClass(YASCL.CLASS_AUTOPLAY);
-			this.slide(this.options.reverse ? YASCL.DIRECTION_FORWARDS : YASCL.DIRECTION_BACKWARDS);
+			this.slide(this.options.reverse ? YASCL.DIRECTION_FORWARDS : YASCL.DIRECTION_BACKWARDS, this.options.delay);
 		}
 	}
 
@@ -119,39 +119,40 @@ export default class YASCL {
 
 
 	// Entry point for slider movement
-	slide(direction, slideNum = null) {
-		// If slider is already moving, ignore trigger
-		if (this.wrapper.hasClass(YASCL.CLASS_ANIMATING)) return;
-		this.wrapper.addClass(YASCL.CLASS_ANIMATING);
+	slide(direction, delay = 0, slideNum = null) {
+		setTimeout(() => {
+			// If slider is already moving, ignore trigger
+			if (this.wrapper.hasClass(YASCL.CLASS_ANIMATING)) return;
+			this.wrapper.addClass(YASCL.CLASS_ANIMATING);
 
-		// Prepare looped item if moving right and prior to animation
-		if(this.options.loop) this.moveLoopedItem(direction, YASCL.STATE_PRE_ANIMATION);
+			// Prepare looped item if moving right and prior to animation
+			if(this.options.loop) this.moveLoopedItem(direction, YASCL.STATE_PRE_ANIMATION);
 
-		// Get new position value
-		const end = this.getCurrentPos() + this.getMovementDistance(direction, slideNum);
+			// Get new position value
+			const end = this.getCurrentPos() + this.getMovementDistance(direction, slideNum);
 
-		this.wrapper.animate({ [this.endSide]: end }, this.options.time, this.options.easing, () => {
-			if(this.wrapper.find(":animated").length > 0) return;
-			this.wrapper.removeClass(YASCL.CLASS_ANIMATING);
+			this.wrapper.animate({ [this.endSide]: end }, this.options.time, this.options.easing, () => {
+				this.wrapper.removeClass(YASCL.CLASS_ANIMATING);
 
-			if(this.options.loop) this.moveLoopedItem(direction, YASCL.STATE_POST_ANIMATION);
+				if(this.options.loop) this.moveLoopedItem(direction, YASCL.STATE_POST_ANIMATION);
 
-			this.updateArrowVisibility();
+				this.updateArrowVisibility();
 
-			const boundaryCrossed = this.boundaryCrossed(direction == YASCL.DIRECTION_FORWARDS ? this.startSide : this.endSide);
+				const boundaryCrossed = this.boundaryCrossed(direction == YASCL.DIRECTION_FORWARDS ? this.startSide : this.endSide);
 
-			// TODO: add autoplay delay option
-			if ((this.options.loop || boundaryCrossed) && this.wrapper.hasClass(YASCL.CLASS_AUTOPLAY)) {
-				this.slide(direction);
-			}
-		});
+				// TODO: add autoplay delay option
+				if ((this.options.loop || boundaryCrossed) && this.wrapper.hasClass(YASCL.CLASS_AUTOPLAY)) {
+					this.slide(direction, this.options.delay);
+				}
+			});
+		}, delay);
 	}
 
 
 	slideTo(slideNum) {
 		if(slideNum < 0 || slideNum > this.wrapper.children().length) return;
 		this.wrapper.removeClass(YASCL.CLASS_AUTOPLAY + ' ' + YASCL.CLASS_ANIMATING);
-		this.slide(YASCL.DIRECTION_UNKNOWN, slideNum);
+		this.slide(YASCL.DIRECTION_UNKNOWN, 0, slideNum);
 	}
 
 

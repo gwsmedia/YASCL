@@ -56,6 +56,10 @@ This will define arrows that can be used to control the slider. It should be a C
 default: `400`  
 A number in miliseconds determining how long for one of the carousel items to make one full movement.
 
+**delay**  
+default: `5000`  
+A number in miliseconds determining how long the carousel will stay on an item before progressing.
+
 **easing**  
 default: `linear`  
 The easing method of the animation. Can be `swing` or `linear`.

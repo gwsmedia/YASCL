@@ -1,6 +1,7 @@
 
 const defaultOptions = {
 	time: 400,
+	delay: 5000,
 	easing: 'linear',
 	autoplay: false,
 	reverse: false,
