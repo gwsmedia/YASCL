@@ -22,6 +22,7 @@ export default class YASCL {
 	static get CLASS_AUTOPLAY() { return "autoplay"; }
 	static get CLASS_PREV_ARROW() { return "prev"; }
 
+
 	constructor(options) {
 		this.options = new Options(options);
 
@@ -33,6 +34,7 @@ export default class YASCL {
 			});
 		}
 	}
+
 
 	initialise() {
 		this.parent = jQuery(this.options.selector);
@@ -149,10 +151,27 @@ export default class YASCL {
 	}
 
 
+	slideNext() {
+		this.cancelSliding();
+		this.slide(YASCL.DIRECTION_BACKWARDS);
+	}
+
+
+	slidePrev() {
+		this.cancelSliding();
+		this.slide(YASCL.DIRECTION_FORWARDS);
+	}
+
+
 	slideTo(slideNum) {
 		if(slideNum < 0 || slideNum > this.wrapper.children().length) return;
+		this.cancelSliding();
+		this.slide(YASCL.DIRECTION_UNKNOWN, slideNum);
+	}
+
+
+	cancelSliding() {
 		this.wrapper.removeClass(YASCL.CLASS_AUTOPLAY + ' ' + YASCL.CLASS_ANIMATING);
-		this.slide(YASCL.DIRECTION_UNKNOWN, 0, slideNum);
 	}
 
 

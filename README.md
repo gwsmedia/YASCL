@@ -102,6 +102,12 @@ If true, the **arrowSelector** will only be searched for as a descendent of **se
 arrows are not considered slider items. This can be useful if the arrows do not have unique **arrowSelector**s.
 
 ### Methods
+**slideNext()**  
+This can be used to slide to the next item.
+
+**slidePrev()**  
+This can be used to slide to the previous item.
+
 **slideTo(slideNum)**  
 This can be called to slide to a specific item. Slide numbers begin at 0.  
 At the moment **loop** changes the slide numbers but this will be remedied in a future version.
