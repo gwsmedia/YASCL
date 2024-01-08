@@ -1,6 +1,7 @@
 
 export default class ParseUtils {
 	static pixelsToInt(pixels) {
-		return parseInt(pixels.replace('px', ''));
+		// Round down subpixels to avoid incorrect comparisons
+		return Math.floor(pixels.replace('px', ''));
 	}
 }

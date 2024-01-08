@@ -3,6 +3,7 @@ import jQuery from 'jquery';
 import Options from './Helper/Options';
 import DragHelper from './Helper/DragHelper';
 import ParseUtils from './Utils/ParseUtils';
+import PositionUtils from './Utils/PositionUtils';
 
 
 export default class YASCL {
@@ -65,17 +66,17 @@ export default class YASCL {
 		this.wrapChildren();
 
 		if(this.options.vertical) {
-			this.startSide = 'top';
-			this.endSide = 'bottom';
+			this.startSide = PositionUtils.SIDE_TOP;
+			this.endSide = PositionUtils.SIDE_BOTTOM;
 			this.wrapper.addClass(YASCL.CLASS_VERTICAL);
 		} else {
-			this.startSide = 'left';
-			this.endSide = 'right';
+			this.startSide = PositionUtils.SIDE_LEFT;
+			this.endSide = PositionUtils.SIDE_RIGHT;
 		}
 
 		// TODO: use transform instead of position
-		const innerSize = this.options.vertical ? this.inner.outerHeight() : this.inner.outerWidth();
-		const wrapperSize = this.options.vertical ? this.wrapper.outerHeight() : this.wrapper.outerWidth();
+		const innerSize = this.options.vertical ? this.inner.height() : this.inner.width();
+		const wrapperSize = this.options.vertical ? this.wrapper.outerHeight(true) : this.wrapper.outerWidth(true);
 		this.wrapper.css(this.endSide, this.options.reverse ? wrapperSize - innerSize : '0px');
 
 		if(this.options.arrowSelector) {
@@ -161,7 +162,7 @@ export default class YASCL {
 
 	getMovementDistance(direction, slideNum = null) {
 		// TODO: Refactor different wrappers to different classes?
-		const innerStart = this.inner.offset()[this.startSide] + ParseUtils.pixelsToInt(this.inner.css('padding-' + this.startSide));
+		const innerStart = PositionUtils.getSidePos(this.inner, this.startSide, false);
 
 		let start, end, operand, distance = 0;
 		let items = this.wrapper.children();
@@ -172,7 +173,7 @@ export default class YASCL {
 
 		for(let i = start; slideNum != null || direction === YASCL.DIRECTION_BACKWARDS ? i < end : i >= end; i += operand) {
 			const item = jQuery(items[i]);
-			const itemStart = item.offset()[this.startSide];
+			const itemStart = PositionUtils.getSidePos(item, this.startSide, true, true);
 
 			// if direction BACKWARDS or UNKNOWN
 			if(direction !== YASCL.DIRECTION_FORWARDS && itemStart > innerStart) {
@@ -184,8 +185,8 @@ export default class YASCL {
 			// if direction FORWARDS or UNKNOWN
 			// Not using else intentionally - we want this to run if DIRECTION_UNKNOWN didn't reach break above
 			if(direction !== YASCL.DIRECTION_BACKWARDS) {
-				const innerEnd = innerStart + (this.options.vertical ? this.inner.outerHeight() : this.inner.outerWidth());
-				const itemEnd = itemStart + (this.options.vertical ? item.outerHeight() : item.outerWidth());
+				const innerEnd = PositionUtils.getSidePos(this.inner, this.endSide, false, false, innerStart)
+				const itemEnd = PositionUtils.getSidePos(item, this.endSide, true, true, itemStart)
 
 				if(this.options.slideToEdge && itemEnd < innerEnd) {
 
@@ -280,9 +281,8 @@ export default class YASCL {
 		const items = this.wrapper.children();
 		const slide = boundary == this.startSide ? items.first() : items.last();
 
-		const innerStartPadding = ParseUtils.pixelsToInt(this.inner.css('padding-' + this.startSide));
-		const innerStart = Math.round(this.inner.offset()[this.startSide] + innerStartPadding);
-		const slideStart = Math.round(slide.offset()[this.startSide]);
+		const innerStart = PositionUtils.getSidePos(this.inner, this.startSide, false);
+		const slideStart = PositionUtils.getSidePos(slide, this.startSide, true, true)
 
 		if(boundary == this.startSide) {
 
@@ -290,11 +290,8 @@ export default class YASCL {
 
 		} else if(boundary == this.endSide) {
 
-			const innerSize = this.options.vertical ? this.inner.outerHeight() : this.inner.outerWidth();
-			const innerEnd = Math.round(innerStart + innerSize);
-
-			const slideSize = this.options.vertical ? slide.outerHeight() : slide.outerWidth();
-			const slideEnd = Math.round(slideStart + slideSize);
+			const innerEnd = PositionUtils.getSidePos(this.inner, this.endSide, false, false, innerStart)
+			const slideEnd = PositionUtils.getSidePos(slide, this.endSide, true, true, slideStart)
 
 			return asBool ? slideEnd > innerEnd : slideEnd - innerEnd;
 
