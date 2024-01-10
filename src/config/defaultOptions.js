@@ -8,6 +8,7 @@ const defaultOptions = {
 	loop: false,
 	draggable: true,
 	vertical: false,
+	matchSize: false,
 	slideToEdge: false,
 	localArrows: false
 }

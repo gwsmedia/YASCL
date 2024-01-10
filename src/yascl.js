@@ -66,6 +66,7 @@ export default class YASCL {
 
 	initialiseSingle() {
 		this.wrapChildren();
+		if(this.options.matchSize) this.matchInnerSize();
 
 		if(this.options.vertical) {
 			this.startSide = SpatialUtils.SIDE_TOP;
@@ -117,6 +118,17 @@ export default class YASCL {
 
 		// Get new wrapper as object
 		this.wrapper = this.inner.children('.' + YASCL.CLASS_WRAPPER);
+	}
+
+
+	matchInnerSize() {
+		let items = this.wrapper.children();
+
+		if(this.options.vertical) {
+			items.css('height', this.inner.height() + 'px');
+		} else {
+			items.css('width', this.inner.width() + 'px');
+		}
 	}
 
 
