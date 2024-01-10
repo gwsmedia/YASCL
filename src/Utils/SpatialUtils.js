@@ -1,6 +1,6 @@
 import ParseUtils from "./ParseUtils";
 
-export default class PositionUtils {
+export default class SpatialUtils {
 	static get SIDE_TOP() { return 'top'; }
 	static get SIDE_LEFT() { return 'left'; }
 	static get SIDE_RIGHT() { return 'right'; }
@@ -14,10 +14,10 @@ export default class PositionUtils {
 		} else {
 			let startSide;
 
-			if (side === PositionUtils.SIDE_RIGHT) {
-				startSide = PositionUtils.SIDE_LEFT;
-			} else if (side === PositionUtils.SIDE_BOTTOM) {
-				startSide = PositionUtils.SIDE_TOP;
+			if (side === SpatialUtils.SIDE_RIGHT) {
+				startSide = SpatialUtils.SIDE_LEFT;
+			} else if (side === SpatialUtils.SIDE_BOTTOM) {
+				startSide = SpatialUtils.SIDE_TOP;
 			} else {
 				startSide = side;
 			}
@@ -26,11 +26,11 @@ export default class PositionUtils {
 		}
 
 		switch(side) {
-			case PositionUtils.SIDE_TOP:
-			case PositionUtils.SIDE_LEFT:
+			case SpatialUtils.SIDE_TOP:
+			case SpatialUtils.SIDE_LEFT:
 
 				if(!includePadding) {
-					const border = PositionUtils.getBorderWidth(el, side);
+					const border = SpatialUtils.getBorderWidth(el, side);
 					const padding = ParseUtils.pixelsToInt(el.css('padding-' + side));
 
 					pos += border + padding;
@@ -40,9 +40,9 @@ export default class PositionUtils {
 
 				break;
 
-			case PositionUtils.SIDE_RIGHT:
-			case PositionUtils.SIDE_BOTTOM:
-				pos += PositionUtils.getSize(el, side == PositionUtils.SIDE_BOTTOM, includePadding, includeMargin);
+			case SpatialUtils.SIDE_RIGHT:
+			case SpatialUtils.SIDE_BOTTOM:
+				pos += SpatialUtils.getSize(el, side == SpatialUtils.SIDE_BOTTOM, includePadding, includeMargin);
 				break;
 
 			default:
@@ -50,7 +50,7 @@ export default class PositionUtils {
 		}
 
 		// Round down subpixels to avoid incorrect comparisons
-		return Math.floor(pos);
+		return Math.round(pos);
 	}
 
 	static getSize(el, isVertical, includePadding = true, includeMargin = false) {
@@ -58,9 +58,9 @@ export default class PositionUtils {
 		const boxSizing = el.css('box-sizing');
 
 		if(boxSizing == 'border-box') {
-			const startSide = isVertical ? PositionUtils.SIDE_TOP : PositionUtils.SIDE_LEFT;
-			const endSide = isVertical ? PositionUtils.SIDE_BOTTOM : PositionUtils.SIDE_RIGHT;
-			border = PositionUtils.getBorderWidth(el, startSide) + PositionUtils.getBorderWidth(el, endSide);
+			const startSide = isVertical ? SpatialUtils.SIDE_TOP : SpatialUtils.SIDE_LEFT;
+			const endSide = isVertical ? SpatialUtils.SIDE_BOTTOM : SpatialUtils.SIDE_RIGHT;
+			border = SpatialUtils.getBorderWidth(el, startSide) + SpatialUtils.getBorderWidth(el, endSide);
 		} else {
 			border = 0;
 		}

@@ -3,7 +3,7 @@ import jQuery from 'jquery';
 import Options from './Helper/Options';
 import DragHelper from './Helper/DragHelper';
 import ParseUtils from './Utils/ParseUtils';
-import PositionUtils from './Utils/PositionUtils';
+import SpatialUtils from './Utils/SpatialUtils';
 
 
 export default class YASCL {
@@ -68,17 +68,17 @@ export default class YASCL {
 		this.wrapChildren();
 
 		if(this.options.vertical) {
-			this.startSide = PositionUtils.SIDE_TOP;
-			this.endSide = PositionUtils.SIDE_BOTTOM;
+			this.startSide = SpatialUtils.SIDE_TOP;
+			this.endSide = SpatialUtils.SIDE_BOTTOM;
 			this.wrapper.addClass(YASCL.CLASS_VERTICAL);
 		} else {
-			this.startSide = PositionUtils.SIDE_LEFT;
-			this.endSide = PositionUtils.SIDE_RIGHT;
+			this.startSide = SpatialUtils.SIDE_LEFT;
+			this.endSide = SpatialUtils.SIDE_RIGHT;
 		}
 
 		// TODO: use transform instead of position
-		const innerSize = PositionUtils.getSize(this.inner, this.options.vertical, false, false);
-		const wrapperSize = PositionUtils.getSize(this.wrapper, this.options.vertical, true, true);
+		const innerSize = SpatialUtils.getSize(this.inner, this.options.vertical, false, false);
+		const wrapperSize = SpatialUtils.getSize(this.wrapper, this.options.vertical, true, true);
 		this.wrapper.css(this.endSide, this.options.reverse ? wrapperSize - innerSize : '0px');
 
 		if(this.options.arrowSelector) {
@@ -182,7 +182,7 @@ export default class YASCL {
 
 	getMovementDistance(direction, slideNum = null) {
 		// TODO: Refactor different wrappers to different classes?
-		const innerStart = PositionUtils.getSidePos(this.inner, this.startSide, false);
+		const innerStart = SpatialUtils.getSidePos(this.inner, this.startSide, false);
 
 		let start, end, operand, distance = 0;
 		let items = this.wrapper.children();
@@ -193,7 +193,7 @@ export default class YASCL {
 
 		for(let i = start; slideNum != null || direction === YASCL.DIRECTION_BACKWARDS ? i < end : i >= end; i += operand) {
 			const item = jQuery(items[i]);
-			const itemStart = PositionUtils.getSidePos(item, this.startSide, true, true);
+			const itemStart = SpatialUtils.getSidePos(item, this.startSide, true, true);
 
 			// if direction BACKWARDS or UNKNOWN
 			if(direction !== YASCL.DIRECTION_FORWARDS && itemStart > innerStart) {
@@ -205,8 +205,8 @@ export default class YASCL {
 			// if direction FORWARDS or UNKNOWN
 			// Not using else intentionally - we want this to run if DIRECTION_UNKNOWN didn't reach break above
 			if(direction !== YASCL.DIRECTION_BACKWARDS) {
-				const innerEnd = PositionUtils.getSidePos(this.inner, this.endSide, false, false, innerStart)
-				const itemEnd = PositionUtils.getSidePos(item, this.endSide, true, true, itemStart)
+				const innerEnd = SpatialUtils.getSidePos(this.inner, this.endSide, false, false, innerStart)
+				const itemEnd = SpatialUtils.getSidePos(item, this.endSide, true, true, itemStart)
 
 				if(this.options.slideToEdge && itemEnd < innerEnd) {
 
@@ -248,7 +248,7 @@ export default class YASCL {
 			// Move last item to start
 			item.prependTo(this.wrapper);
 			// Get full size of item including margins
-			const size = PositionUtils.getSize(item, this.options.vertical, true, true);
+			const size = SpatialUtils.getSize(item, this.options.vertical, true, true);
 			// Set translation to size of item ready to move into slider
 			this.wrapper.css(this.endSide, size);
 		}
@@ -301,8 +301,8 @@ export default class YASCL {
 		const items = this.wrapper.children();
 		const slide = boundary == this.startSide ? items.first() : items.last();
 
-		const innerStart = PositionUtils.getSidePos(this.inner, this.startSide, false);
-		const slideStart = PositionUtils.getSidePos(slide, this.startSide, true, true)
+		const innerStart = SpatialUtils.getSidePos(this.inner, this.startSide, false);
+		const slideStart = SpatialUtils.getSidePos(slide, this.startSide, true, true)
 
 		if(boundary == this.startSide) {
 
@@ -310,8 +310,8 @@ export default class YASCL {
 
 		} else if(boundary == this.endSide) {
 
-			const innerEnd = PositionUtils.getSidePos(this.inner, this.endSide, false, false, innerStart)
-			const slideEnd = PositionUtils.getSidePos(slide, this.endSide, true, true, slideStart)
+			const innerEnd = SpatialUtils.getSidePos(this.inner, this.endSide, false, false, innerStart)
+			const slideEnd = SpatialUtils.getSidePos(slide, this.endSide, true, true, slideStart)
 
 			return asBool ? slideEnd > innerEnd : slideEnd - innerEnd;
 
