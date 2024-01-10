@@ -30,7 +30,7 @@ export default class PositionUtils {
 			case PositionUtils.SIDE_LEFT:
 
 				if(!includePadding) {
-					const border = ParseUtils.pixelsToInt(el.css('border-' + side + '-width'));
+					const border = PositionUtils.getBorderWidth(el, side);
 					const padding = ParseUtils.pixelsToInt(el.css('padding-' + side));
 
 					pos += border + padding;
@@ -41,11 +41,8 @@ export default class PositionUtils {
 				break;
 
 			case PositionUtils.SIDE_RIGHT:
-				pos += includePadding ? el.outerWidth(includeMargin) : el.width();
-				break;
-
 			case PositionUtils.SIDE_BOTTOM:
-				pos += includePadding ? el.outerHeight(includeMargin) : el.height();
+				pos += PositionUtils.getSize(el, side == PositionUtils.SIDE_BOTTOM, includePadding, includeMargin);
 				break;
 
 			default:
@@ -54,5 +51,30 @@ export default class PositionUtils {
 
 		// Round down subpixels to avoid incorrect comparisons
 		return Math.floor(pos);
+	}
+
+	static getSize(el, isVertical, includePadding = true, includeMargin = false) {
+		let size, border;
+		const boxSizing = el.css('box-sizing');
+
+		if(boxSizing == 'border-box') {
+			const startSide = isVertical ? PositionUtils.SIDE_TOP : PositionUtils.SIDE_LEFT;
+			const endSide = isVertical ? PositionUtils.SIDE_BOTTOM : PositionUtils.SIDE_RIGHT;
+			border = PositionUtils.getBorderWidth(el, startSide) + PositionUtils.getBorderWidth(el, endSide);
+		} else {
+			border = 0;
+		}
+
+		if(isVertical) {
+			size = includePadding ? el.outerHeight(includeMargin) : el.height() + border;
+		} else {
+			size = includePadding ? el.outerWidth(includeMargin) : el.width() + border;
+		}
+
+		return Math.round(size);
+	}
+
+	static getBorderWidth(el, side) {
+		return ParseUtils.pixelsToInt(el.css('border-' + side + '-width'));
 	}
 }

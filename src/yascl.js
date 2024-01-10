@@ -77,8 +77,8 @@ export default class YASCL {
 		}
 
 		// TODO: use transform instead of position
-		const innerSize = this.options.vertical ? this.inner.height() : this.inner.width();
-		const wrapperSize = this.options.vertical ? this.wrapper.outerHeight(true) : this.wrapper.outerWidth(true);
+		const innerSize = PositionUtils.getSize(this.inner, this.options.vertical, false, false);
+		const wrapperSize = PositionUtils.getSize(this.wrapper, this.options.vertical, true, true);
 		this.wrapper.css(this.endSide, this.options.reverse ? wrapperSize - innerSize : '0px');
 
 		if(this.options.arrowSelector) {
@@ -248,7 +248,7 @@ export default class YASCL {
 			// Move last item to start
 			item.prependTo(this.wrapper);
 			// Get full size of item including margins
-			const size = this.options.vertical ? item.outerHeight(true) : item.outerWidth(true);
+			const size = PositionUtils.getSize(item, this.options.vertical, true, true);
 			// Set translation to size of item ready to move into slider
 			this.wrapper.css(this.endSide, size);
 		}
