@@ -142,7 +142,7 @@ export default class Carousel {
 	slideTo(slideNum) {
 		if(slideNum < 0 || slideNum > this.wrapper.children().length) return;
 		this.cancelSliding();
-		this.slide(Carousel.DIRECTION_UNKNOWN, slideNum);
+		this.slide(Carousel.DIRECTION_UNKNOWN, 0, slideNum);
 	}
 
 
