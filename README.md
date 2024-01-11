@@ -47,7 +47,8 @@ Unless **innerSelector** is also defined, this means:
 - For looping to work smoothly the width of this container should at max be the width of one item less than the total width of all items.
 In other words if you have 5 items of width 100px, this container should have a max width of 400px.
 
-Multiple sliders can use the same selector and they will still be considered separate sliders.
+The selector can map to multiple elements and they will all be instanstiated as separate sliders. The `slide` methods detailed below will apply to
+all of the sliders simultaneously, or one can use the `getCarousel` methods to get the inidividual carousels to call the methods on.
 
 **arrowSelector**  
 This will define arrows that can be used to control the slider. It should be a CSS class that the next and previous arrows share. The previous arrow **requires** the class `prev` to differentiate it. **The `right` class is now deprecated and functionality based on it will be removed in a further release.**
@@ -103,14 +104,32 @@ arrows are not considered slider items. This can be useful if the arrows do not 
 
 ### Methods
 **slideNext()**  
-This can be used to slide to the next item.
+This can be used to slide the carousel(s) to the next item.
 
 **slidePrev()**  
-This can be used to slide to the previous item.
+This can be used to slide the carousel(s) to the previous item.
 
 **slideTo(slideNum)**  
-This can be called to slide to a specific item. Slide numbers begin at 0.  
+This can be called to slide the carousel(s) to a specific item. Slide numbers begin at 0.  
 At the moment **loop** changes the slide numbers but this will be remedied in a future version.
+
+#### Multiple carousels
+The methods above will work regarldess as to how many elements `selector` maps to. However, there are times
+one may want to call a method on a singular carousel. In this case, one can use one of the methods below
+to get the individual carousel and apply said method to that instead.
+
+**getCarousels()**  
+If `selector` refers to multiple elements, this method can be used to get all of the individual
+slider objects. Then the `slide` methods above can be called on specific carousels. If there is only
+one carousel, this is irrelevant.
+
+**getCarousel(index)**  
+If `selector` refers to multiple elements, this method can be used to get a singular slider object.
+Then the `slide` methods above can be called on it directly. If there is only
+one carousel, this is irrelevant.
+
+**carouselCount()**  
+This will get the number of carousels instantiated.
 
 ### Example
 ```

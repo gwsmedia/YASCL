@@ -21,6 +21,10 @@ export default class YASCL {
 		return new Proxy(this, {
 			get(target, prop, receiver) {
 				return function(...args) {
+					if(target[prop] instanceof Function) {
+						return Reflect.apply(target[prop], target, args);
+					}
+
 					for(let i = 0, j = target.carousels.length; i < j; i++) {
 						let carousel = target.carousels[i];
 
@@ -33,5 +37,17 @@ export default class YASCL {
 				}
 			}
 		});
+	}
+
+	getCarousels() {
+		return this.carousels;
+	}
+
+	getCarousel(i) {
+		return this.carousels[i];
+	}
+
+	carouselCount() {
+		return this.carousels.length;
 	}
 }
