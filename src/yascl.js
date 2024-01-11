@@ -166,7 +166,7 @@ export default class YASCL {
 	slideTo(slideNum) {
 		if(slideNum < 0 || slideNum > this.wrapper.children().length) return;
 		this.cancelSliding();
-		this.slide(YASCL.DIRECTION_UNKNOWN, slideNum);
+		this.slide(YASCL.DIRECTION_UNKNOWN, 0, slideNum);
 	}
 
 
