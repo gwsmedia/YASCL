@@ -1,6 +1,6 @@
 {
 	"name": "yascl",
-	"version": "1.5.0",
+	"version": "1.5.1",
 	"description": "Minimalist endless carousel for extensive styling",
 	"browser": "src/yascl.js",
 	"author": "GWS Media Ltd.",
