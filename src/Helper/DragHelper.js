@@ -34,8 +34,8 @@ export default class DragHelper {
 	}
 
 	dragMove(event) {
-		if(event.type == 'mousemove') event.preventDefault();
 		if(!this.moving) return;
+		else if(event.type == 'mousemove') event.preventDefault();
 
 		this.movedX = this.startMouseX - this.getClientX(event);
 		this.x = this.startX + this.movedX;
