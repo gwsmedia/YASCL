@@ -114,16 +114,21 @@ This can be called to slide the carousel(s) to a specific item. Slide numbers be
 At the moment **loop** changes the slide numbers but this will be remedied in a future version.
 
 **getCurrentSlide()**  
-Returns the current slide element.
+Returns the current slide element.  
+This the leftmost (or topmost) element that is fully within the constraints of the carousel container.  
+In other words, elements that are partially off the edge of the carousel are excluded.
 
 **getCurrentIndex()**  
-Returns the index of the current slide.
+Returns the index of the current slide.  
+See `getCurrentSlide()` for how this is calculated.
 
 **getNextSlide()**  
-Returns the next adjacent slide element.
+Returns the next adjacent slide element.  
+See `getCurrentSlide()` for how this is calculated.
 
 **getPrevSlide()**  
-Returns the previous adjacent slide element.
+Returns the previous adjacent slide element.  
+See `getCurrentSlide()` for how this is calculated.
 
 #### Multiple carousels
 The methods above will work regarldess as to how many elements `selector` maps to. However, there are times
@@ -133,12 +138,12 @@ to get the individual carousel and apply said method to that instead.
 **getCarousels()**  
 If `selector` refers to multiple elements, this method can be used to get all of the individual
 slider objects. Then the `slide` methods above can be called on specific carousels. If there is only
-one carousel, this is irrelevant.
+one carousel, this is unnecessary.
 
 **getCarousel(index)**  
 If `selector` refers to multiple elements, this method can be used to get a singular slider object.
 Then the `slide` methods above can be called on it directly. If there is only
-one carousel, this is irrelevant.
+one carousel, this is unnecessary.
 
 **carouselCount()**  
 This will get the number of carousels instantiated.
