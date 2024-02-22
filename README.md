@@ -113,6 +113,18 @@ This can be used to slide the carousel(s) to the previous item.
 This can be called to slide the carousel(s) to a specific item. Slide numbers begin at 0.  
 At the moment **loop** changes the slide numbers but this will be remedied in a future version.
 
+**getCurrentSlide()**  
+Returns the current slide element.
+
+**getCurrentIndex()**  
+Returns the index of the current slide.
+
+**getNextSlide()**  
+Returns the next adjacent slide element.
+
+**getPrevSlide()**  
+Returns the previous adjacent slide element.
+
 #### Multiple carousels
 The methods above will work regarldess as to how many elements `selector` maps to. However, there are times
 one may want to call a method on a singular carousel. In this case, one can use one of the methods below

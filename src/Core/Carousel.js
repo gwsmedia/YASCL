@@ -52,10 +52,24 @@ export default class Carousel {
 			this.endSide = SpatialUtils.SIDE_RIGHT;
 		}
 
-		// TODO: use transform instead of position
-		const innerSize = SpatialUtils.getSize(this.inner, this.options.vertical, false, false);
-		const wrapperSize = SpatialUtils.getSize(this.wrapper, this.options.vertical, true, true);
-		this.wrapper.css(this.endSide, this.options.reverse ? wrapperSize - innerSize : '0px');
+		let startPos;
+
+		if(this.options.reverse) {
+			this.currentIndex = this.items.length - 1;
+			this.currentSlide = this.items.last()
+
+			const innerSize = SpatialUtils.getSize(this.inner, this.options.vertical, false, false);
+			const wrapperSize = SpatialUtils.getSize(this.wrapper, this.options.vertical, true, true);
+
+			startPos = wrapperSize - innerSize;
+		} else {
+			this.currentIndex = 0;
+			this.currentSlide = this.items.first();
+
+			startPos = '0px'
+		}
+
+		this.wrapper.css(this.endSide, startPos);
 
 		if(this.options.arrowSelector) {
 			this.prepareArrows();
@@ -93,6 +107,8 @@ export default class Carousel {
 
 		// Get new wrapper as object
 		this.wrapper = this.inner.children('.' + Carousel.CLASS_WRAPPER);
+
+		this.items = this.wrapper.children();
 	}
 
 
@@ -106,11 +122,17 @@ export default class Carousel {
 			// Prepare looped item if moving right and prior to animation
 			if(this.options.loop) this.moveLoopedItem(direction, Carousel.STATE_PRE_ANIMATION);
 
-			// Get new position value
-			const end = this.getCurrentPos() + this.getMovementDistance(direction, slideNum);
+			const movementData = this.getMovementData(direction, slideNum);
 
+			// Get new position value
+			// TODO: use transform instead of position
+			const end = this.getCurrentPos() + movementData.distance
 			this.wrapper.animate({ [this.endSide]: end }, this.options.time, this.options.easing, () => {
 				this.wrapper.removeClass(Carousel.CLASS_ANIMATING);
+
+				// TODO: need to trigger update after dragging
+				this.currentIndex = movementData.targetIndex;
+				this.currentSlide = movementData.targetItem;
 
 				if(this.options.loop) this.moveLoopedItem(direction, Carousel.STATE_POST_ANIMATION);
 
@@ -118,7 +140,6 @@ export default class Carousel {
 
 				const boundaryCrossed = this.boundaryCrossed(direction == Carousel.DIRECTION_FORWARDS ? this.startSide : this.endSide);
 
-				// TODO: add autoplay delay option
 				if ((this.options.loop || boundaryCrossed) && this.wrapper.hasClass(Carousel.CLASS_AUTOPLAY)) {
 					this.slide(direction, this.options.delay);
 				}
@@ -151,24 +172,53 @@ export default class Carousel {
 	}
 
 
+	getCurrentSlide() {
+		return this.currentSlide;
+	}
+
+
+	getCurrentIndex() {
+		return this.currentIndex;
+	}
+
+
+	getNextSlide() {
+		return this.getAdjancentSlide(false);
+	}
+
+
+	getPrevSlide() {
+		return this.getAdjancentSlide(true);
+	}
+
+
+	getAdjancentSlide(prev = false) {
+		let index = prev ? this.currentIndex - 1 : this.currentIndex + 1;
+		let slide = this.items.eq(index);
+		if(slide.length === 0) {
+			return this.options.loop ? (prev ? this.items.last() : this.items.first()) : null;
+		} else return slide;
+	}
+
+
 	getCurrentPos() {
 		return ParseUtils.pixelsToInt(this.wrapper.css(this.endSide));
 	}
 
 
-	getMovementDistance(direction, slideNum = null) {
+	getMovementData(direction, slideNum = null) {
 		// TODO: Refactor different wrappers to different classes?
 		const innerStart = SpatialUtils.getSidePos(this.inner, this.startSide, false);
 
-		let start, end, operand, distance = 0;
+		let i, item, start, end, operand, distance = 0;
 		let items = this.wrapper.children();
 
 		if(slideNum != null) start = slideNum, end = slideNum + 1, operand = 1;
 		else if (direction === Carousel.DIRECTION_BACKWARDS) start = 0, end = items.length, operand = 1;
 		else start = items.length - 1, end = 0, operand = -1;
 
-		for(let i = start; slideNum != null || direction === Carousel.DIRECTION_BACKWARDS ? i < end : i >= end; i += operand) {
-			const item = jQuery(items[i]);
+		for(i = start; slideNum != null || direction === Carousel.DIRECTION_BACKWARDS ? i < end : i >= end; i += operand) {
+			item = jQuery(items[i]);
 			const itemStart = SpatialUtils.getSidePos(item, this.startSide, true, true);
 
 			// if direction BACKWARDS or UNKNOWN
@@ -176,11 +226,8 @@ export default class Carousel {
 				distance = itemStart - innerStart;
 				if(direction === Carousel.DIRECTION_UNKNOWN) direction = Carousel.DIRECTION_BACKWARDS;
 				break;
-			}
-
 			// if direction FORWARDS or UNKNOWN
-			// Not using else intentionally - we want this to run if DIRECTION_UNKNOWN didn't reach break above
-			if(direction !== Carousel.DIRECTION_BACKWARDS) {
+			} else if(direction !== Carousel.DIRECTION_BACKWARDS) {
 				const innerEnd = SpatialUtils.getSidePos(this.inner, this.endSide, false, false, innerStart)
 				const itemEnd = SpatialUtils.getSidePos(item, this.endSide, true, true, itemStart)
 
@@ -198,12 +245,14 @@ export default class Carousel {
 
 				}
 			}
+
+			if(slideNum != null) break;
 		}
 
 		const overstep = this.getBoundaryOverstep(direction === Carousel.DIRECTION_FORWARDS ? this.startSide : this.endSide);
 		if(Math.abs(distance) > Math.abs(overstep)) distance = overstep;
 
-		return distance;
+		return {targetIndex: i, targetItem: item, distance: distance};
 	}
 
 
