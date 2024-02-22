@@ -1,10 +1,11 @@
 
 export default class DragHelper {
-	constructor(wrapper, inner, vertical, getCurrentPos, updateArrowVisibility, cancelSliding) {
+	constructor(wrapper, inner, vertical, getCurrentPos, updateCurrentSlide, updateArrowVisibility, cancelSliding) {
 		this.wrapper = wrapper;
 		this.inner = inner;
 		this.vertical = vertical;
 		this.getCurrentPos = getCurrentPos;
+		this.updateCurrentSlide = updateCurrentSlide;
 		this.updateArrowVisibility = updateArrowVisibility;
 		this.cancelSliding = cancelSliding;
 
@@ -19,7 +20,7 @@ export default class DragHelper {
 	getClientPos(event) {
 		let eventData;
 
-		if(['touchstart', 'touchmove','touchend'].includes(event.type)) {
+		if(['touchstart', 'touchmove', 'touchend'].includes(event.type)) {
 			eventData = event.touches[0];
 		} else {
 			eventData = event;
@@ -56,6 +57,7 @@ export default class DragHelper {
 
 		jQuery(this.wrapper).css(this.vertical ? 'bottom' : 'right', this.pos + 'px');
 
+		this.updateCurrentSlide();
 		this.updateArrowVisibility();
 	}
 

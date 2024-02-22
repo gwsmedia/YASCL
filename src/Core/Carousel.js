@@ -80,7 +80,15 @@ export default class Carousel {
 
 		if(this.options.draggable) {
 			// TODO: Kinda gross passing funcs as params like this. Refactor.
-			this.dragHelper = new DragHelper(this.wrapper, this.inner, this.options.vertical, () => { return this.getCurrentPos() }, () => { this.updateArrowVisibility(); }, () => { this.cancelSliding() });
+			this.dragHelper = new DragHelper(
+				this.wrapper,
+				this.inner,
+				this.options.vertical,
+				() => { return this.getCurrentPos() },
+				() => { this.updateCurrentSlide(); },
+				() => { this.updateArrowVisibility(); },
+				() => { this.cancelSliding() }
+			);
 			this.dragHelper.addEvents();
 		}
 
@@ -206,19 +214,29 @@ export default class Carousel {
 	}
 
 
+	updateCurrentSlide() {
+		let currentIndex, nextIndex = this.getMovementData(Carousel.DIRECTION_BACKWARDS).targetIndex;
+
+		if(nextIndex === 0) currentIndex = this.items.length;
+		else currentIndex = nextIndex - 1;
+
+		this.currentIndex = currentIndex;
+		this.currentSlide = this.items[currentIndex];
+	}
+
+
 	getMovementData(direction, slideNum = null) {
 		// TODO: Refactor different wrappers to different classes?
 		const innerStart = SpatialUtils.getSidePos(this.inner, this.startSide, false);
 
 		let i, item, start, end, operand, distance = 0;
-		let items = this.wrapper.children();
 
 		if(slideNum != null) start = slideNum, end = slideNum + 1, operand = 1;
-		else if (direction === Carousel.DIRECTION_BACKWARDS) start = 0, end = items.length, operand = 1;
-		else start = items.length - 1, end = 0, operand = -1;
+		else if (direction === Carousel.DIRECTION_BACKWARDS) start = 0, end = this.items.length, operand = 1;
+		else start = this.items.length - 1, end = 0, operand = -1;
 
 		for(i = start; slideNum != null || direction === Carousel.DIRECTION_BACKWARDS ? i < end : i >= end; i += operand) {
-			item = jQuery(items[i]);
+			item = jQuery(this.items[i]);
 			const itemStart = SpatialUtils.getSidePos(item, this.startSide, true, true);
 
 			// if direction BACKWARDS or UNKNOWN
@@ -259,9 +277,8 @@ export default class Carousel {
 	// Move items to continue loop
 	moveLoopedItem(direction, state) {
 		const eq = direction === Carousel.DIRECTION_BACKWARDS ? 0 : -1;
-		const items = this.wrapper.children();
 		// Get first or last item in set depending on direction
-		const item = items.eq(eq);
+		const item = this.items.eq(eq);
 
 		if (direction === Carousel.DIRECTION_BACKWARDS && state === Carousel.STATE_POST_ANIMATION) {
 			// Move first item to end
@@ -323,8 +340,7 @@ export default class Carousel {
 
 
 	getBoundaryOverstep(boundary, asBool = false) {
-		const items = this.wrapper.children();
-		const slide = boundary == this.startSide ? items.first() : items.last();
+		const slide = boundary == this.startSide ? this.items.first() : this.items.last();
 
 		const innerStart = SpatialUtils.getSidePos(this.inner, this.startSide, false);
 		const slideStart = SpatialUtils.getSidePos(slide, this.startSide, true, true)
