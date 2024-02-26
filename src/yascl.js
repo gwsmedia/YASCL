@@ -25,15 +25,18 @@ export default class YASCL {
 						return Reflect.apply(target[prop], target, args);
 					}
 
+					let returnVals = [];
+
 					for(let i = 0, j = target.carousels.length; i < j; i++) {
 						let carousel = target.carousels[i];
 
 						if(carousel[prop] instanceof Function) {
-							Reflect.apply(carousel[prop], carousel, args);
-						} else {
-							return Reflect.get(target, prop, receiver);
+							let val = Reflect.apply(carousel[prop], carousel, args);
+							returnVals.push(val);
 						}
 					}
+
+					return returnVals;
 				}
 			}
 		});
